@@ -45,10 +45,10 @@ void TimerHeap::SwapNode(size_t i, size_t j) {
 }
 
 void TimerHeap::FloatUp(size_t index) {
-    assert(index >= 0 && index < _heap.size());
+    assert(index >= 0 && index < heap.size());
     int64_t root = (static_cast<int64_t>(index) - 1) / 2;        // 转有符号数，防止size_t下溢
     while(root >= 0) {
-        if(_heap[root] < _heap[index])
+        if(heap[root] < heap[index])
             break; 
         SwapNode(index, root);
         index = root;
@@ -64,7 +64,7 @@ bool TimerHeap::SinkDown(size_t index, size_t n) {
     while(smallest < n) {
         if(smallest + 1 < n && heap[smallest + 1] < heap[smallest]) 
             smallest++;
-        if(heap[root] < heap[j])
+        if(heap[root] < heap[smallest])
             break;
         SwapNode(root, smallest);
         root = smallest;
@@ -75,10 +75,10 @@ bool TimerHeap::SinkDown(size_t index, size_t n) {
 
 // 删除指定位置的结点
 void TimerHeap::DeleteNode(size_t index)
-    assert(!_heap.empty() && index >= 0 && index < _heap.size());
+    assert(!heap.empty() && index >= 0 && index < heap.size());
     // 将要删除的结点换到队尾，然后调整堆 
     size_t i = index;
-    size_t n = _heap.size() - 1;  // 节点数-1
+    size_t n = heap.size() - 1;  // 节点数-1
     assert(i <= n);
     if(i < n) {         // 要删除节点不为尾节点，需要与队尾元素交换，然后上浮或者下沉调整
         SwapNode(i, n);
@@ -87,16 +87,16 @@ void TimerHeap::DeleteNode(size_t index)
         }
     }
     // 队尾元素删除
-    idx2Map.erase(_heap.back().fd);
-    _heap.pop_back();
+    idx2Map.erase(heap.back().fd);
+    heap.pop_back();
 }
 
 // 更新fd对应节点超时时间
 void TimerHeap::Update(int fd, int timeout) {
     //  调整指定fd的结点
-    assert(!_heap.empty() && idx2Map.count(fd) > 0);
-    _heap[idx2Map[fd]].expires = Clock::now() + MS(timeout);;
-    SinkDown(idx2Map[fd], _heap.size());   // 时间延长，下沉
+    assert(!heap.empty() && idx2Map.count(fd) > 0);
+    heap[idx2Map[fd]].expires = Clock::now() + MS(timeout);;
+    SinkDown(idx2Map[fd], heap.size());   // 时间延长，下沉
 }
 
 // 心搏函数，清除超时结点
@@ -115,20 +115,20 @@ void TimerHeap::Tick() {
 }
 
 void HeapTimer::Pop() {
-    assert(!_heap.empty());
+    assert(!heap.empty());
     DeleteNode(0);
 }
 
 void HeapTimer::Clear() {
     idx2Map.clear();
-    _heap.clear();
+    heap.clear();
 }
 
 int HeapTimer::GetNextTick() {
     Tick();
     size_t res = -1;
-    if(!_heap.empty()) {
-        res = std::chrono::duration_cast<MS>(_heap.front().expires - Clock::now()).count();
+    if(!heap.empty()) {
+        res = std::chrono::duration_cast<MS>(heap.front().expires - Clock::now()).count();
         if(res < 0) { 
             res = 0; 
         }

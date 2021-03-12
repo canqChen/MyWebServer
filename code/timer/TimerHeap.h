@@ -50,7 +50,7 @@ private:
 
     void DeleteNode(size_t i);
     
-    void FloatUp(int64_t index);
+    void FloatUp(size_t index);
 
     bool SinkDown(size_t index, size_t n);
 

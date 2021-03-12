@@ -14,7 +14,7 @@
 #include "Epoller.h"
 #include "../log/Log.h"
 #include "../timer/TimerHeap.h"
-#include "../pool/SqlConnpool.h"
+#include "../pool/SqlConnPool.h"
 #include "../pool/ThreadPool.h"
 #include "../pool/SqlConnRAII.h"
 #include "../http/HttpClient.h"
