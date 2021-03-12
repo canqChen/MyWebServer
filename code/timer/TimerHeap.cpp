@@ -1,4 +1,3 @@
-
 #include "TimerHeap.h"
 
 
@@ -74,7 +73,7 @@ bool TimerHeap::SinkDown(size_t index, size_t n) {
 }
 
 // 删除指定位置的结点
-void TimerHeap::DeleteNode(size_t index)
+void TimerHeap::DeleteNode(size_t index){
     assert(!heap.empty() && index >= 0 && index < heap.size());
     // 将要删除的结点换到队尾，然后调整堆 
     size_t i = index;

@@ -68,7 +68,8 @@ template<class T>
 void BlockQueue<T>::Close() {
     {   
         std::lock_guard<std::mutex> locker(mMtx);
-        mQueue.clear();
+        std::queue<T> tmp;
+        tmp.swap(mQueue);
         mClose = true;
     }
     mCondProducer.notify_all();

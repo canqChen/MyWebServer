@@ -121,11 +121,11 @@ void WebServer::AddClient(int fd, struct sockaddr_in client_addr) {
     assert(fd > 0);
     mClients[fd].Init(fd, client_addr);   // 新增一个连接的客户端，并初始化其fd和address
     if(mTimeoutMS > 0) {
-        mTimer->AddNode(fd, mTimeoutMS, std::bind(&WebServer::CloseConn, this, &users_[fd]));   // 给新连接设置定时器，超时，则为非活动连接，应调用关闭连接回调函数
+        mTimer->AddNode(fd, mTimeoutMS, std::bind(&WebServer::CloseConn, this, &mClients[fd]));   // 给新连接设置定时器，超时，则为非活动连接，应调用关闭连接回调函数
     }
     mEpoller->AddFd(fd, EPOLLIN | mConnTrigerMode);  // 注册epoll事件，ET模式读入请求
     SetFdNonblock(fd);              // 设为非阻塞fd，使用非阻塞io
-    LOG_INFO("Client[%d] in!", users_[fd].GetFd());
+    LOG_INFO("Client[%d] in!", mClients[fd].GetFd());
 }
 
 // 处理新连接
