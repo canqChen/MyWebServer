@@ -88,7 +88,7 @@ size_t HttpResponse::FileLen() const {
 
 void HttpResponse::ErrorHtml() {
     if(ERRCODE_TO_PATH.count(mCode) == 1) {
-        mResourcePath = ERRCODE_TO_PATH[mCode];
+        mResourcePath = ERRCODE_TO_PATH.at(mCode);
         stat((mSrcDir + mResourcePath).data(), &mMmFileStat);
     }
 }
@@ -97,11 +97,11 @@ void HttpResponse::ErrorHtml() {
 void HttpResponse::AddStateLine(Buffer& buff) {
     string status;
     if(CODE_TO_STATUS.count(mCode) == 1) {
-        status = CODE_TO_STATUS[mCode];
+        status = CODE_TO_STATUS.at(mCode);
     }
     else {
         mCode = 400;
-        status = CODE_TO_STATUS[400];
+        status = CODE_TO_STATUS.at(400);
     }
     buff.Append("HTTP/1.1 " + to_string(mCode) + " " + status + "\r\n");
 }
@@ -151,7 +151,7 @@ string HttpResponse::GetFileType() {
     }
     string suffix = mResourcePath.substr(idx);
     if(SUFFIX_TYPE.count(suffix) == 1) {
-        return SUFFIX_TYPE[suffix];
+        return SUFFIX_TYPE.at(suffix);
     }
     return "text/plain";
 }

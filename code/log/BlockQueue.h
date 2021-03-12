@@ -84,7 +84,8 @@ void BlockQueue<T>::Flush() {
 template<class T>
 void BlockQueue<T>::Clear() {
     std::lock_guard<std::mutex> locker(mMtx);
-    queue<T>().swap(mQueue);
+    std::queue<T> tmp;
+    tmp.swap(mQueue);
 }
 
 template<class T>

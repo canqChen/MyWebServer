@@ -58,8 +58,8 @@ private:
     int mListenFd;   // 服务器socket监听fd
     char* mSrcDir;
     
-    uint32_t _listenTrigerMode;    // 监听socket fd事件的触发模式
-    uint32_t _connTrigerMode;        // 已连接的socket fd的事件的触发模式
+    uint32_t mListenTrigerMode;    // 监听socket fd事件的触发模式
+    uint32_t mConnTrigerMode;        // 已连接的socket fd的事件的触发模式
    
     // RAII, Resource Acquisition Is Initialization  在构造函数中申请分配资源，在析构函数中释放资源
 

@@ -114,17 +114,17 @@ void TimerHeap::Tick() {
     }
 }
 
-void HeapTimer::Pop() {
+void TimerHeap::Pop() {
     assert(!heap.empty());
     DeleteNode(0);
 }
 
-void HeapTimer::Clear() {
+void TimerHeap::Clear() {
     idx2Map.clear();
     heap.clear();
 }
 
-int HeapTimer::GetNextTick() {
+int TimerHeap::GetNextTick() {
     Tick();
     size_t res = -1;
     if(!heap.empty()) {

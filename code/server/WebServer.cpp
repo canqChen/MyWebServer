@@ -27,8 +27,8 @@ WebServer::WebServer(
             LOG_INFO("========== Server init ==========");
             LOG_INFO("Port:%d, OpenLinger: %s", mSocketPort, OptLinger? "true":"false");
             LOG_INFO("Listen Mode: %s, OpenConn Mode: %s",
-                            (_listenTrigerMode & EPOLLET ? "ET": "LT"),
-                            (_connTrigerMode & EPOLLET ? "ET": "LT"));
+                            (mListenTrigerMode & EPOLLET ? "ET": "LT"),
+                            (mConnTrigerMode & EPOLLET ? "ET": "LT"));
             LOG_INFO("LogSys level: %d", logLevel);
             LOG_INFO("srcDir: %s", HttpClient::srcDir);
             LOG_INFO("SqlConnPool num: %d, ThreadPool num: %d", connPoolNum, threadNum);
@@ -44,28 +44,28 @@ WebServer::~WebServer() {
 }
 
 void WebServer::InitTrigerMode(int trigMode) {
-    _listenTrigerMode = EPOLLRDHUP;
-    _connTrigerMode = EPOLLONESHOT | EPOLLRDHUP;
+    mListenTrigerMode = EPOLLRDHUP;
+    mConnTrigerMode = EPOLLONESHOT | EPOLLRDHUP;
     switch (trigMode)
     {
     case 0:
         break;
     case 1:
-        _connTrigerMode |= EPOLLET;
+        mConnTrigerMode |= EPOLLET;
         break;
     case 2:
-        _listenTrigerMode |= EPOLLET;
+        mListenTrigerMode |= EPOLLET;
         break;
     case 3:
-        _listenTrigerMode |= EPOLLET;
-        _connTrigerMode |= EPOLLET;
+        mListenTrigerMode |= EPOLLET;
+        mConnTrigerMode |= EPOLLET;
         break;
     default:
-        _listenTrigerMode |= EPOLLET;
-        _connTrigerMode |= EPOLLET;
+        mListenTrigerMode |= EPOLLET;
+        mConnTrigerMode |= EPOLLET;
         break;
     }
-    HttpClient::isET = (_connTrigerMode & EPOLLET);
+    HttpClient::isET = (mConnTrigerMode & EPOLLET);
 }
 
 void WebServer::Start() {
@@ -119,11 +119,11 @@ void WebServer::CloseConn(HttpClient* client) {   // 关闭连接，并把对应
 
 void WebServer::AddClient(int fd, struct sockaddr_in client_addr) {
     assert(fd > 0);
-    users_[fd].Init(fd, client_addr);   // 新增一个连接的客户端，并初始化其fd和address
-    if(timeoutMS_ > 0) {
-        timer_->AddNode(fd, timeoutMS_, std::bind(&WebServer::CloseConn, this, &users_[fd]));   // 给新连接设置定时器，超时，则为非活动连接，应调用关闭连接回调函数
+    mClients[fd].Init(fd, client_addr);   // 新增一个连接的客户端，并初始化其fd和address
+    if(mTimeoutMS > 0) {
+        mTimer->AddNode(fd, mTimeoutMS, std::bind(&WebServer::CloseConn, this, &users_[fd]));   // 给新连接设置定时器，超时，则为非活动连接，应调用关闭连接回调函数
     }
-    epoller_->AddFd(fd, EPOLLIN | connTrigerMode_);  // 注册epoll事件，ET模式读入请求
+    mEpoller->AddFd(fd, EPOLLIN | mConnTrigerMode);  // 注册epoll事件，ET模式读入请求
     SetFdNonblock(fd);              // 设为非阻塞fd，使用非阻塞io
     LOG_INFO("Client[%d] in!", users_[fd].GetFd());
 }
@@ -141,7 +141,7 @@ void WebServer::DealListen() {
             return;
         }
         AddClient(fd, client_addr);   // 添加客户
-    } while(_listenTrigerMode & EPOLLET);  // ET模式，只通知一次，每当有通知时，需要一次将所有连接读出，否则不再通知
+    } while(mListenTrigerMode & EPOLLET);  // ET模式，只通知一次，每当有通知时，需要一次将所有连接读出，否则不再通知
 }
 
 // 处理可读事件
@@ -178,10 +178,10 @@ void WebServer::OnRead(HttpClient* client) {
 
 void WebServer::OnProcess(HttpClient* client) {
     if(client->Process()) {         // 处理完请求数据，然后监听可写事件
-        mEpoller->ModFd(client->GetFd(), _connTrigerMode | EPOLLOUT);
+        mEpoller->ModFd(client->GetFd(), mConnTrigerMode | EPOLLOUT);
     } 
     else {              // 无数据处理，继续监听可读事件
-        mEpoller->ModFd(client->GetFd(), _connTrigerMode | EPOLLIN);
+        mEpoller->ModFd(client->GetFd(), mConnTrigerMode | EPOLLIN);
     }
 }
 
@@ -198,7 +198,7 @@ void WebServer::OnWrite(HttpClient* client) {
     }
     else if(ret < 0) {
         if(writeErrno == EAGAIN) {  // 继续传输
-            mEpoller->ModFd(client->GetFd(), _connTrigerMode | EPOLLOUT);
+            mEpoller->ModFd(client->GetFd(), mConnTrigerMode | EPOLLOUT);
             return;
         }
     }
@@ -262,7 +262,7 @@ bool WebServer::InitSocket() {
         close(mListenFd);
         return false;
     }
-    ret = mEpoller->AddFd(mListenFd,  _listenTrigerMode | EPOLLIN);
+    ret = mEpoller->AddFd(mListenFd,  mListenTrigerMode | EPOLLIN);
     if(ret == 0) {
         LOG_ERROR("Add listen error!");
         close(mListenFd);

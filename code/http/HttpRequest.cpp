@@ -119,7 +119,7 @@ void HttpRequest::ParsePost() {
     if(mMethod == "POST" && mHeader["Content-Type"] == "application/x-www-form-urlencoded") {
         ParseFromUrlencoded();
         if(DEFAULT_HTML_TAG.count(mResourcePath)) {   // 仅register.html 和 login.html 支持post方法
-            int tag = DEFAULT_HTML_TAG[mResourcePath];
+            int tag = DEFAULT_HTML_TAG.at(mResourcePath);
             LOG_DEBUG("Tag:%d", tag);
             if(tag == 0 || tag == 1) {
                 bool isLogin = (tag == 1);
@@ -180,7 +180,7 @@ bool HttpRequest::UserVerify(const string &name, const string &pwd, bool isLogin
     if(name == "" || pwd == "") { return false; }
     LOG_INFO("Verify name:%s pwd:%s", name.c_str(), pwd.c_str());
     MYSQL* sql;
-    SqlConnRAII(&sql,  SqlConnPool::Instance());
+    SqlConnRAII(&sql,  SqlConnPool::GetInstance());
     assert(sql);
     
     bool flag = false;
@@ -255,7 +255,7 @@ std::string HttpRequest::Version() const {
 std::string HttpRequest::GetPost(const std::string& key) const {
     assert(key != "");
     if(mPost.count(key) == 1) {
-        return mPost[key];
+        return mPost.at(key);
     }
     return "";
 }
@@ -263,7 +263,7 @@ std::string HttpRequest::GetPost(const std::string& key) const {
 std::string HttpRequest::GetPost(const char* key) const {
     assert(key != nullptr);
     if(mPost.count(key) == 1) {
-        return mPost[key];
+        return mPost.at(key);
     }
     return "";
 }
