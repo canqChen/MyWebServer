@@ -10,7 +10,7 @@
 #include <stdarg.h>           // vastart va_end
 #include <assert.h>
 #include <sys/stat.h>         //mkdir
-#include "BlockDeque.h"
+#include "BlockQueue.h"
 #include "../buffer/Buffer.h"
 
 class Log {
