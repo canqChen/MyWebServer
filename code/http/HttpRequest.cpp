@@ -18,7 +18,7 @@ void HttpRequest::Init() {
 
 bool HttpRequest::IsKeepAlive() const {
     if(mHeader.count("Connection") == 1) {
-        return mHeader["Connection"] == "keep-alive" && mVersion == "1.1";
+        return mHeader.at("Connection") == "keep-alive" && mVersion == "1.1";
     }
     return false;
 }
