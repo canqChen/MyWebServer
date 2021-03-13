@@ -191,7 +191,7 @@ bool HttpRequest::UserVerify(const string &name, const string &pwd, bool isLogin
     
     if(!isLogin) { flag = true; }
     // 查询用户及密码
-    snprintf(order, 256, "SELECT username, password FROM %s WHERE username='%s' LIMIT 1", SqlConnPool::GetInstance()->GetDBName(), name.c_str());
+    snprintf(order, 256, "SELECT username, password FROM user WHERE username='%s' LIMIT 1",  name.c_str());
     LOG_DEBUG("%s", order);
 
     if(mysql_query(sql, order)) { 
@@ -224,7 +224,7 @@ bool HttpRequest::UserVerify(const string &name, const string &pwd, bool isLogin
     if(!isLogin && flag == true) {
         LOG_DEBUG("regirster!");
         bzero(order, 256);
-        snprintf(order, 256,"INSERT INTO user(username, password) VALUES('%s','%s')", name.c_str(), pwd.c_str());
+        snprintf(order, 256,"INSERT INTO user(username, password) VALUES('%s','%s')",  name.c_str(), pwd.c_str());
         LOG_DEBUG( "%s", order);
         if(mysql_query(sql, order)) { 
             LOG_DEBUG( "Insert error!");
