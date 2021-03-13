@@ -39,7 +39,7 @@ public:
     
     bool Process();
 
-    // 待写字节数
+    // 待写mIov中总字节数
     int ToWriteBytes() { 
         return mIov[0].iov_len + mIov[1].iov_len; 
     }
