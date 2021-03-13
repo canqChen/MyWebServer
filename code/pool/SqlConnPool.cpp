@@ -33,8 +33,13 @@ void SqlConnPool::Init(const char* host, int port,
         }
         mConnQueue.push(sql);
     }
+    mDBName = std::move(std::string(dbName));
     mMaxConn = connSize;
     sem_init(&mSemId, 0, mMaxConn);
+}
+
+const char * SqlConnPool::GetDBName() const{
+    return mDBName.c_str();
 }
 
 // 获得一个连接

@@ -185,13 +185,13 @@ bool HttpRequest::UserVerify(const string &name, const string &pwd, bool isLogin
     
     bool flag = false;
     unsigned int j = 0;
-    char order[256] = { 0 };
+    char order[256] = { '\0' };
     MYSQL_FIELD *fields = nullptr;
     MYSQL_RES *res = nullptr;
     
     if(!isLogin) { flag = true; }
     // 查询用户及密码
-    snprintf(order, 256, "SELECT username, password FROM user WHERE username='%s' LIMIT 1", name.c_str());
+    snprintf(order, 256, "SELECT username, password FROM %s WHERE username='%s' LIMIT 1", SqlConnPool::GetInstance()->GetDBName(), name.c_str());
     LOG_DEBUG("%s", order);
 
     if(mysql_query(sql, order)) { 

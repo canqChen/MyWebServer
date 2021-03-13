@@ -23,6 +23,8 @@ public:
               const char* dbName, int connSize);
     void ClosePool();
 
+    const char * GetDBName() const;
+
     SqlConnPool(const SqlConnPool &) = delete;
     SqlConnPool & operator = (const SqlConnPool&) = delete;
 
@@ -30,6 +32,7 @@ private:
     SqlConnPool();
     ~SqlConnPool();
 
+    std::string  mDBName;
     int mMaxConn;
     int mUseCount;
     int mFreeCount;
