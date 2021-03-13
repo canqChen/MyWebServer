@@ -12,7 +12,7 @@ WebServer::WebServer(
     {
     mSrcDir = getcwd(nullptr, 256);
     assert(mSrcDir);
-    strncat(mSrcDir, "../resources/", 16);
+    strncat(mSrcDir, "/../resources/", 16);
     HttpClient::userCount = 0;
     HttpClient::srcDir = mSrcDir;       // 资源路径
     SqlConnPool::GetInstance()->Init("localhost", sqlPort, sqlUser, sqlPwd, dbName, connPoolNum);  // 初始化sql连接池
