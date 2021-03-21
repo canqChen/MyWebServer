@@ -145,7 +145,7 @@ void Log::Write(int level, const char *format, ...) {
         int n = snprintf(mBuff.NextWriteBeginPointer(), 128, "%d-%02d-%02d %02d:%02d:%02d.%06ld ",
                     t.tm_year + 1900, t.tm_mon + 1, t.tm_mday,
                     t.tm_hour, t.tm_min, t.tm_sec, now.tv_usec);
-                    
+        
         mBuff.UpdateWritten(n);
         AppendLogLevelTitle(level);
 

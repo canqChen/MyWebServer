@@ -40,7 +40,8 @@ bool HttpRequest::Parse(Buffer& buff) {
                 return false;
             }
             ParsePath();
-            break;    
+            mState = HEADERS;
+            break;
         case HEADERS:       // 头部
             ParseHeader(line);
             if(buff.ReadableBytes() <= 2) {
@@ -84,7 +85,7 @@ bool HttpRequest::ParseRequestLine(const string& line) {
         mMethod = subMatch[1];
         mResourcePath = subMatch[2];
         mVersion = subMatch[3];
-        mState = HEADERS;
+        
         return true;
     }
     LOG_ERROR("RequestLine Error");
@@ -109,12 +110,6 @@ void HttpRequest::ParseBody(const string& line) {
     LOG_DEBUG("Body:%s, len:%d", line.c_str(), line.size());
 }
 
-int HttpRequest::ConverHex(char ch) {
-    if(ch >= 'A' && ch <= 'F') return ch -'A' + 10;
-    if(ch >= 'a' && ch <= 'f') return ch -'a' + 10;
-    return ch;
-}
-
 void HttpRequest::ParsePost() {
     if(mMethod == "POST" && mHeader["Content-Type"] == "application/x-www-form-urlencoded") {
         ParseFromUrlencoded();
@@ -135,6 +130,16 @@ void HttpRequest::ParsePost() {
 }
 
 // 编码：用于键值对参数，参数之间用&间隔, 如果有空格，将空格转换为+加号；=号前是key；有特殊符号，用%标记，并将特殊符号转换为ASCII HEX值
+/*
+1. 字母数字字符 "a" 到 "z"、"A" 到 "Z" 和 "0" 到 "9" 保持不变。
+
+2. 特殊字符 "."、"-"、"*" 和 "_" 保持不变。
+
+3. 空格字符 " " 转换为一个加号 "+"。
+
+4. 所有其他字符都是不安全的，因此首先使用一些编码机制将它们转换为一个或多个字节。然后每个字节用一个包含 3 个字符的字符串 "%xy" 表示，
+其中 xy 为该字节的两位十六进制表示形式。编码机制是 UTF-8。
+*/
 void HttpRequest::ParseFromUrlencoded() {
     if(mBody.size() == 0) { return; }
 
@@ -176,6 +181,12 @@ void HttpRequest::ParseFromUrlencoded() {
     }
 }
 
+int HttpRequest::ConverHex(char ch) {
+    if(ch >= 'A' && ch <= 'F') return ch -'A' + 10;
+    if(ch >= 'a' && ch <= 'f') return ch -'a' + 10;
+    return ch;
+}
+
 bool HttpRequest::UserVerify(const string &name, const string &pwd, bool isLogin) {
     if(name == "" || pwd == "") { return false; }
     LOG_INFO("Verify name:%s pwd:%s", name.c_str(), pwd.c_str());
@@ -205,15 +216,18 @@ bool HttpRequest::UserVerify(const string &name, const string &pwd, bool isLogin
     while(MYSQL_ROW row = mysql_fetch_row(res)) {
         LOG_DEBUG("MYSQL ROW: %s %s", row[0], row[1]);
         string password(row[1]);
-        // 注册行为 且 用户名未被使用
-        if(isLogin) {
-            if(pwd == password) { flag = true; }
+        
+        if(isLogin) {       // 登录
+            if(pwd == password) 
+            { 
+                flag = true; 
+            }
             else {
                 flag = false;
                 LOG_DEBUG("pwd error!");
             }
         } 
-        else { 
+        else {      // 注册，用户名已被使用
             flag = false; 
             LOG_DEBUG("user used!");
         }

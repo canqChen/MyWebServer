@@ -120,6 +120,8 @@ void TimerHeap::Pop() {
 
 void TimerHeap::Clear() {
     idx2Map.clear();
+    for(auto node:heap)     // 析构断开连接
+        node.cb();
     heap.clear();
 }
 

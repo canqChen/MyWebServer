@@ -133,7 +133,7 @@ void WebServer::DealListen() {
     struct sockaddr_in client_addr;
     socklen_t len = sizeof(client_addr);
     do {
-        int fd = accept(mListenFd, (struct sockaddr *)&client_addr, &len);   // 非阻塞，立刻返回，因为listenFd_非阻塞，有就绪连接才accept
+        int fd = accept(mListenFd, (struct sockaddr *)&client_addr, &len);   // mListenFd非阻塞，立刻返回，因为listenFd_非阻塞，有就绪连接才accept
         if(fd <= 0) { return;}          // accept监听队列已无established连接
         else if(HttpClient::userCount >= MAX_FD) {    // 超过最大连接数
             SendError(fd, "Server busy!");
@@ -240,8 +240,7 @@ bool WebServer::InitSocket() {
 
     int optval = 1;
     // 端口复用
-    // 只有最后一个套接字会正常接收数据
-    // time wait 状态的连接被强制使用
+    // time wait 状态的端口被强制使用
     ret = setsockopt(mListenFd, SOL_SOCKET, SO_REUSEADDR, (const void*)&optval, sizeof(int));
     if(ret == -1) {
         LOG_ERROR("set socket setsockopt error !");
