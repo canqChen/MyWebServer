@@ -25,7 +25,7 @@ public:
                                 pool->tasks.pop();
                                 locker.unlock();   // 取完解锁，让池接收新任务，或者让其他线程处理新任务
                                 task();
-                                locker.lock();   // 为下次循环加锁，同时实现负载均衡
+                                locker.lock();   // 为下次循环加锁
                             }
                             else if(pool->isClosed) 
                                 break;
