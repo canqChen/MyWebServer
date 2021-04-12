@@ -43,7 +43,6 @@ public:
                 mPool->cond.notify_all();    // 唤醒所有线程，执行关闭
                 throw std::runtime_error("ThreadPool Init Failed!");
             }
-            
     }
 
     ThreadPool() = default;

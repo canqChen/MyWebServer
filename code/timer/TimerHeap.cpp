@@ -126,7 +126,7 @@ void TimerHeap::Clear() {
 }
 
 int TimerHeap::GetNextTick() {
-    Tick();
+    Tick();     // 清除无响应连接
     size_t res = -1;
     if(!heap.empty()) {
         res = std::chrono::duration_cast<MS>(heap.front().expires - Clock::now()).count();

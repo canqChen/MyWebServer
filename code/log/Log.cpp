@@ -162,7 +162,7 @@ void Log::Write(int level, const char *format, ...) {
         if(mIsAsync && mQueue && !mQueue->Full()) {
             mQueue->Push_back(mBuff.ClearAllToStr());
         } else {
-            fputs(mBuff.ReadBeginPointer(), mFp);
+            fputs(mBuff.ReadBeginPointer(), mFp);   // 同步，直接写入
         }
         mBuff.ClearAll();
     }

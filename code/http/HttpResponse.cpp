@@ -146,7 +146,7 @@ void HttpResponse::UnmapFile() {
 string HttpResponse::GetFileType() {
     // 判断文件类型
     string::size_type idx = mResourcePath.find_last_of('.');
-    if(idx == string::npos) {
+    if(idx == string::npos) {   // 无后缀，作纯文本处理
         return "text/plain";
     }
     string suffix = mResourcePath.substr(idx);

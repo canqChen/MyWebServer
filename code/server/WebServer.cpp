@@ -168,7 +168,7 @@ void WebServer::OnRead(HttpClient* client) {
     assert(client);
     int ret = -1;
     int readErrno = 0;
-    ret = client->Read(&readErrno);  // 读数据到__buffer
+    ret = client->Read(&readErrno);  // 读数据到buffer
     if(ret <= 0 && readErrno != EAGAIN) {   // 出错关闭
         CloseConn(client);
         return;
