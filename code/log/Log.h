@@ -22,60 +22,59 @@ enum LogLevel{
 
 class Log {
 public:
-    void Init(LogLevel level, const char* path = "./log", 
+    void init(LogLevel level, const char* path = "./log", 
                 const char* suffix =".log",
                 int maxQueueCapacity = 1024);
 
-    static Log* GetInstance();
-    static void FlushLogThread();
-    bool IsOpen() const {return mFp != nullptr;}
-    LogLevel GetLevel();
-    void SetLevel(LogLevel level);
-    
-    void LogBase(LogLevel level, const char * format, ...);
+    static Log* getInstance();
+    LogLevel getLevel();
+    void setLevel(LogLevel level);
+    void logBase(LogLevel level, const char * format, ...);
     
 private:
     Log();
     virtual ~Log();
     Log(const Log&) = delete;
     Log(Log&&) = delete;
-    void AsyncWrite();
-    void AppendLogLevelTitle(LogLevel level);
-    void Flush();
-    void Write(LogLevel level, const char *format, va_list vaList);
-    
-    string GetFileName(struct tm sysTime);
-    void UpdateWritenFile(struct tm sysTime);
-    void DetermineLogIdx(struct tm sysTime);
-    void OpenFile(string fileName);
-    struct tm Log::GetSysTime();
+    void __asyncWrite();
+    void __appendLogLevelTitle(LogLevel level);
+    void __flush();
+    void __write(LogLevel level, const char *format, va_list vaList);
+    static void __flushLogThread();
+    bool __isFileOpen() const {return fp_ != nullptr;}
+
+    string __getFileName(struct tm sysTime);
+    void __changeWritenFile(struct tm sysTime);
+    void __determineLogIdx(struct tm sysTime);
+    void __openFile(string fileName);
+    struct tm Log::__getSysTime();
 
 private:
-    static const int LOG_PATH_LEN = 256;
-    static const int LOG_NAME_LEN = 256;
+    static const uint32_t LOG_PATH_LEN = 256;
+    static const uint32_t LOG_NAME_LEN = 256;
     static const uint32_t MAX_LINES = 50000;
 
-    const char* mPath;
-    const char* mSuffix;
+    const char* logPath_;
+    const char* suffix_;
 
-    atomic_uint32_t mLineCount;
+    atomic_uint32_t lineCount_;
 
-    int mToday;
-    int mLogIdx;
+    int today_;
+    int fileIdx_;
 
-    Buffer mBuff;
-    LogLevel mLevel;
+    Buffer buff_;
+    LogLevel level_;
 
-    FILE* mFp;
-    std::unique_ptr<BlockQueue<std::string> > mQueue;  // 封装阻塞队列
-    std::unique_ptr<std::thread> mWriteThread;  // 写日志线程
-    std::mutex mMtx;
+    FILE* fp_;
+    std::unique_ptr<BlockQueue<std::string> > blockQueue_;  // 封装阻塞队列
+    std::unique_ptr<std::thread> writeThread_;  // 写日志线程
+    std::mutex mtx_;
 };
 
 #define LOG_BASE(level, format, ...) \
     do {\
-        Log* log = Log::GetInstance();\
-        log->LogBase(leve, format, ##__VA_ARGS__); \
+        Log* log = Log::getInstance();\
+        log->logBase(leve, format, ##__VA_ARGS__); \
     } while(0);
 
 #define LOG_DEBUG(format, ...) do {LOG_BASE(DEBUG, format, ##__VA_ARGS__)} while(0);
