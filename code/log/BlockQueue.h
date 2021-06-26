@@ -30,14 +30,13 @@ public:
 
     T& Front();
 
-    void Push_back(const T &item);
+    void PushBack(const T &item);
 
     bool Pop(T &item);
 
     bool Pop(T &item, int timeout);
 
     void Flush();
-
 private:
     std::queue<T> mQueue;
 
@@ -76,10 +75,10 @@ void BlockQueue<T>::Close() {
     mCondConsumer.notify_all();
 }
 
-
+// 唤醒消费者，写入日志
 template<class T>
 void BlockQueue<T>::Flush() {
-    mCondConsumer.notify_one();
+    mCondConsumer.notify_all();
 }
 
 template<class T>
@@ -109,9 +108,9 @@ size_t BlockQueue<T>::Capacity() {
 
 // 生产者-队尾插入
 template<class T>
-void BlockQueue<T>::Push_back(const T &item) {
+void BlockQueue<T>::PushBack(const T &item) {
     std::unique_lock<std::mutex> locker(mMtx);
-    while(mQueue.size() >= mCapacity) {   // 队列满，等待消耗
+    while(mQueue.size() >= mCapacity) {   // 队列满，等待
         mCondProducer.wait(locker);     // 释放锁，阻塞
     }
     mQueue.push(item);
@@ -130,13 +129,13 @@ bool BlockQueue<T>::Full(){
     return mQueue.size() >= mCapacity;
 }
 
-// 消费者-队首弹出
+// 消费者-队首弹出，队列空则阻塞等待
 template<class T>
 bool BlockQueue<T>::Pop(T &item) {
-    std::unique_lock<std::mutex> locker(mMtx);  
-    while(mQueue.empty()){        // 队列空，等待生产
+    std::unique_lock<std::mutex> locker(mMtx);
+    while(mQueue.empty()) {        // 队列空，等待生产
         mCondConsumer.wait(locker);
-        if(mClose){
+        if(mClose) {
             return false;
         }
     }
