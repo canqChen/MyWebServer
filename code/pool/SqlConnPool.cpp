@@ -14,7 +14,7 @@ SqlConnPool* SqlConnPool::GetInstance() {
 }
 
 // sql连接池初始化
-void SqlConnPool::Init(const char* host, int port,
+void SqlConnPool::init(const char* host, int port,
             const char* user,const char* pwd, const char* dbName,
             int connSize = 10) {
     assert(connSize > 0);
@@ -38,12 +38,12 @@ void SqlConnPool::Init(const char* host, int port,
     sem_init(&semId_, 0, maxConn_);
 }
 
-const char * SqlConnPool::GetDBName() const{
+const char * SqlConnPool::getDBName() const{
     return dbName_.c_str();
 }
 
 // 获得一个连接
-MYSQL* SqlConnPool::GetConn() {
+MYSQL* SqlConnPool::getConn() {
     MYSQL *sql = nullptr;
     if(connQueue_.empty()){
         LOG_WARN("SqlConnPool busy!");
@@ -59,14 +59,14 @@ MYSQL* SqlConnPool::GetConn() {
 }
 
 // 释放连接，归还sql连接池
-void SqlConnPool::FreeConn(MYSQL* sql) {
+void SqlConnPool::freeConn(MYSQL* sql) {
     assert(sql);
     lock_guard<mutex> locker(mtx_);
     connQueue_.push(sql);
     sem_post(&semId_);
 }
 
-void SqlConnPool::ClosePool() {
+void SqlConnPool::closePool() {
     lock_guard<mutex> locker(mtx_);
     while(!connQueue_.empty()) {
         auto item = connQueue_.front();
@@ -77,11 +77,11 @@ void SqlConnPool::ClosePool() {
 }
 
 // 空闲连接数量
-int SqlConnPool::GetFreeConnCount() {
+int SqlConnPool::getFreeConnCount() {
     lock_guard<mutex> locker(mtx_);
     return connQueue_.size();
 }
 
 SqlConnPool::~SqlConnPool() {
-    ClosePool();
+    closePool();
 }

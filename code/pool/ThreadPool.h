@@ -11,12 +11,12 @@
 
 class ThreadPool {
 public:
-    explicit ThreadPool(size_t threadCount = 12): mPool(std::make_shared<Pool>()) {
+    explicit ThreadPool(size_t threadCount = 12): pool_(std::make_shared<Pool>()) {
             assert(threadCount > 0);
             try{
                 // 创建线程池，并分离
                 for(size_t i = 0; i < threadCount; i++) {
-                    std::thread([pool = mPool] {          // lambda表达式，初始化工作线程
+                    std::thread([pool = pool_] {          // lambda表达式，初始化工作线程
                         std::unique_lock<std::mutex> locker(pool->mtx);  
                         while(true) {
                             if(!pool->tasks.empty()) {
@@ -37,10 +37,10 @@ public:
             }
             catch(...){
                 {
-                    std::lock_guard<std::mutex> locker(mPool->mtx);  
-                    mPool->isClosed = true;         // isClosed = true，关闭所有线程
+                    std::lock_guard<std::mutex> locker(pool_->mtx);  
+                    pool_->isClosed = true;         // isClosed = true，关闭所有线程
                 }
-                mPool->cond.notify_all();    // 唤醒所有线程，执行关闭
+                pool_->cond.notify_all();    // 唤醒所有线程，执行关闭
                 throw std::runtime_error("ThreadPool Init Failed!");
             }
     }
@@ -50,22 +50,22 @@ public:
     ThreadPool(ThreadPool&&) = delete;
     
     ~ThreadPool() {
-        if(static_cast<bool>(mPool)) {
+        if(static_cast<bool>(pool_)) {
             {
-                std::lock_guard<std::mutex> locker(mPool->mtx);  
-                mPool->isClosed = true;         // isClosed = true，关闭所有线程
+                std::lock_guard<std::mutex> locker(pool_->mtx);  
+                pool_->isClosed = true;         // isClosed = true，关闭所有线程
             }
-            mPool->cond.notify_all();    // 唤醒所有线程，执行关闭
+            pool_->cond.notify_all();    // 唤醒所有线程，执行关闭
         }
     }
 
     template<class F>
     void addTask(F&& task) {
         {
-            std::lock_guard<std::mutex> locker(mPool->mtx);  // RAII，创建即加锁，作用域技术析构解锁
-            mPool->tasks.emplace(std::forward<F>(task));
+            std::lock_guard<std::mutex> locker(pool_->mtx);  // RAII，创建即加锁，作用域技术析构解锁
+            pool_->tasks.emplace(std::forward<F>(task));
         }
-        mPool->cond.notify_one();
+        pool_->cond.notify_one();
     }
 
 private:
@@ -75,7 +75,7 @@ private:
         bool isClosed;      // 关闭与否
         std::queue<std::function<void()> > tasks;   // 任务队列
     };
-    std::shared_ptr<Pool> mPool;
+    std::shared_ptr<Pool> pool_;
 };
 
 

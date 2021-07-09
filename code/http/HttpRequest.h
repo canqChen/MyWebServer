@@ -3,7 +3,6 @@
 #define HTTP_REQUEST_H
 
 #include <unordered_map>
-#include <unordered_set>
 #include <string>
 #include <regex>
 #include <errno.h>     
@@ -14,10 +13,9 @@
 #include "../pool/SqlConnPool.h"
 #include "../pool/SqlConnRAII.h"
 #include "HttpUtils.h"
+#include "../utils/URLEncodeUtil.h"
 
 using std::string;
-using std::unordered_set;
-using std::unordered_map;
 
 class HttpRequest {
 public:
@@ -27,32 +25,61 @@ public:
         BODY,
         FINISH,
     };
-
-    enum HTTP_CODE {
-        NO_REQUEST = 0,
-        GET_REQUEST,
-        BAD_REQUEST,
-        NO_RESOURSE,
-        FORBIDDENT_REQUEST,
-        FILE_REQUEST,
-        INTERNAL_ERROR,
-        CLOSED_CONNECTION,
-    };
     
-    HttpRequest() { init(); }
+    explicit HttpRequest(Buffer & buff) { __init(buffs); }
     ~HttpRequest() = default;
+    
+    string getRequestURI() const {
+        return URI_;
+    }
 
-    void init();
-    void parseRequest(Buffer& buff);
+    HttpVersion getHttpVersion() const {
+        return httpVersion_;
+    }
 
-    string getRequestURI() const;
-    HttpMethod getMethod() const;
-    string getHttpVersion() const;
-    string getParameter(const string& name) const;
-    string getParameter(const char* name) const;
+    HttpMethod getMethod() const {
+        return requestMethod_;
+    }
+    HttpVersion getHttpVersion() const {
+        return httpVersion_;
+    }
 
-    bool isKeepAlive() const;
-    void getHeader() const;
+    bool isKeepAlive() const {
+        if(requestHeaders_.count("Connection")) {
+            return requestHeaders_.at("Connection") == "keep-alive";
+        }
+        return false;
+    }
+
+    string getHeader(const string & header) const {
+        if(requestHeaders_.count(header)) {
+            return requestHeaders_.at(header);
+        }
+        return "";
+    }
+
+    string getParameter(const string & name) const {
+        assert(key != "");
+        if(requestParameters_.count(name) == 1) {
+            return requestParameters_.at(name);
+        }
+        return "";
+    }
+
+    string getParameter(const char* name) const {
+        if(name == nullptr)
+            return "";
+        string key(name);
+        return getParameter(key);
+    }
+
+    string getContentType() const {
+        string header = "Content-Type";
+        if(requestHeaders_.count(header)) {
+            return requestHeaders_.at(header);
+        }
+        return "";
+    }
 
     /* 
     TODO:
@@ -61,25 +88,25 @@ public:
     */
 
 private:
+    void __init(Buffer & buff);
+    void __parseRequest(Buffer& buff);
     bool __parseRequestLine(const string& line);
     bool __parseHeader(const string& line);
     bool __parseBody(const string& line);
-    void __parseGetParameters();
+    void __parseURL(string & url);
     void __parsePostBody();
-    void __parseFromUrlencoded();
+    void __parseParams(string & params);
 
     static bool UserVerify(const string& name, const string& pwd, bool isLogin);
 
+private:
     PARSE_STATE parseState_;
     HttpMethod requestMethod_;
-    string requestURI_, requestBody_, httpVersion_, requestURL_;
-    map<string, string> requestHeaders_;
-    map<string, string> requestParameters_;
-    const char * CRLF = "\r\n"; 
+    string URL_, requestBody_, URI_;
+    HttpVersion httpVersion_;
+    std::unordered_map<string, string> requestHeaders_;
+    std::unordered_map<string, string> requestParameters_;
     HttpStatusCode statusCode_;
-    const unordered_map<string, HttpMethod> supportedMethodMap_ = {
-        {"GET", GET}, {"POST", POST}, {"PUT", PUT}, {"DELETE", DELETE}
-    };
 };
 
 

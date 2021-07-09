@@ -38,7 +38,7 @@ public:
     bool process();
 
     // 待写iov_中总字节数
-    int ToWriteBytes() const {
+    int bytesToWrite() const {
         return iov_[0].iov_len + iov_[1].iov_len; 
     }
 

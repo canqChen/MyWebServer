@@ -84,12 +84,12 @@ ssize_t HttpClient::send(int* saveErrno) {
             iov_[0].iov_len -= len;
             writeBuff_.updateReadPos(len);
         }
-    } while(isET || ToWriteBytes() > 10240);
+    } while(isET || bytesToWrite() > 10240);
     return len;
 }
 
 bool HttpClient::process() {
-    mRequest.init();
+    mRequest.__init();
     if(readBuff_.readableBytes() <= 0) {  // 无数据可处理
         return false;
     }
@@ -114,6 +114,6 @@ bool HttpClient::process() {
         iov_[1].iov_len = mResponse.fileSize();
         iovCnt_ = 2;
     }
-    LOG_DEBUG("filesize:%d, %d  to %d", mResponse.fileSize() , iovCnt_, ToWriteBytes());
+    LOG_DEBUG("filesize:%d, %d  to %d", mResponse.fileSize() , iovCnt_, bytesToWrite());
     return true;
 }

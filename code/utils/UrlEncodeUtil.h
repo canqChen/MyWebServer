@@ -6,10 +6,11 @@
 # include<assert.h>
 
 using std::string;
+typedef unsigned char byte;
 
-class UrlEncodeUtils {
-    static unsigned char toHex(unsigned char ch);
-    static unsigned char fromHex(unsigned char ch);
+class URLEncodeUtils {
+    static byte toHex(byte ch);
+    static byte fromHex(byte ch);
     static string decode(const string & str);
     static string encode(const string & str);
 };

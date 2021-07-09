@@ -8,14 +8,14 @@ class SqlConnRAII {
 public:
     SqlConnRAII(MYSQL** sql, SqlConnPool *connpool) {
         assert(connpool);
-        *sql = connpool->GetConn();
+        *sql = connpool->getConn();
         sql_ = *sql;
         connPool_ = connpool;
     }
     
     ~SqlConnRAII() {
         if(sql_) { 
-            connPool_->FreeConn(sql_); 
+            connPool_->freeConn(sql_); 
         }
     }
     

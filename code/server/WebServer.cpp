@@ -15,7 +15,7 @@ WebServer::WebServer(
     strncat(srcDir_, "/resources", 16);
     HttpClient::userCount = 0;
     HttpClient::srcDir = srcDir_;       // 资源路径
-    SqlConnPool::GetInstance()->Init("localhost", sqlPort, sqlUser, sqlPwd, dbName, connPoolNum);  // 初始化sql连接池
+    SqlConnPool::GetInstance()->init("localhost", sqlPort, sqlUser, sqlPwd, dbName, connPoolNum);  // 初始化sql连接池
 
     __initTrigerMode(trigMode);
     if(!__initSocket()) { isClose_ = true;}
@@ -40,7 +40,7 @@ WebServer::~WebServer() {
     close(listenFd_);
     isClose_ = true;
     free(srcDir_);
-    SqlConnPool::GetInstance()->ClosePool();
+    SqlConnPool::GetInstance()->closePool();
 }
 
 void WebServer::__initTrigerMode(int trigMode) {
@@ -175,7 +175,7 @@ void WebServer::__onWrite(HttpClient* client) {
     int ret = -1;
     int writeErrno = 0;
     ret = client->send(&writeErrno);
-    if(client->ToWriteBytes() == 0) {       // 传输完成
+    if(client->bytesToWrite() == 0) {       // 传输完成
         if(client->isKeepAlive()) {
             __onProcess(client);      // 长连接，监听可读事件
             return;
@@ -199,7 +199,7 @@ void WebServer::__extentTime(HttpClient* client) {
 void WebServer::__onProcess(HttpClient* client) {
     if(client->process()) {         // 处理完请求数据，然后监听可写事件
         epoller_->modFd(client->getFd(), connTrigerMode_ | EPOLLOUT);
-    } 
+    }
     else {              // 无数据处理，继续监听可读事件
         epoller_->modFd(client->getFd(), connTrigerMode_ | EPOLLIN);
     }

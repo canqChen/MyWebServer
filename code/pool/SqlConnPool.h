@@ -14,16 +14,17 @@ class SqlConnPool {
 public:
     static SqlConnPool *GetInstance();
 
-    MYSQL *GetConn();
-    void FreeConn(MYSQL * conn);
-    int GetFreeConnCount();
+    MYSQL *getConn();
+    void freeConn(MYSQL * conn);
+    int getFreeConnCount();
 
-    void Init(const char* host, int port,
+    void init(const char* host, int port,
               const char* user,const char* pwd, 
               const char* dbName, int connSize);
-    void ClosePool();
 
-    const char * GetDBName() const;
+    void closePool();
+
+    const char * getDBName() const;
 
     SqlConnPool() = delete;
     SqlConnPool(const SqlConnPool &) = delete;

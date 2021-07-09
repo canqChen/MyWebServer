@@ -1,5 +1,7 @@
-#ifndef __HTTP_UTILS_H__
-#define __HTTP_UTILS_H__
+#ifndef HTTP_UTILS_H
+#define HTTP_UTILS_H
+
+#incluide<unordered_map>
 
 enum HttpMethod {
     UNKNOWN,
@@ -21,5 +23,20 @@ enum HttpStatusCode {
     InternalServerError500 = 500,
     HttpVersionNotSupported505 = 505
 };
+
+enum HttpVersion {
+    ErrorVersion
+    Version1_1
+};
+
+const std::unordered_map<string, HttpMethod> supportedMethodMap_ = {
+    {"GET", GET}, {"POST", POST}, {"PUT", PUT}, {"DELETE", DELETE}
+};
+
+const std::unordered_map<string, HttpVersion> supportedHttpVersion_ = {
+    {"1.1", Version1_1}
+};
+
+const char * CRLF = "\r\n";
 
 #endif

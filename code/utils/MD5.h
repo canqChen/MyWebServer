@@ -35,7 +35,7 @@ private:
     void __transform(const byte block[64]);
     void __encode(const ulong *input, byte *output, size_t length);
     void __decode(const byte *input, ulong *output, size_t length);
-    string bytesToHexString(const byte *input, size_t length);
+    string __bytesToHexString(const byte *input, size_t length);
  
 private:
     ulong state_[4];    /* state (ABCD) */

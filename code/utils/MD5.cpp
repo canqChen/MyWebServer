@@ -316,7 +316,7 @@ void MD5::__decode(const byte *input, ulong *output, size_t length) {
 }
 
 /* Convert byte array to hex string. */
-string MD5::bytesToHexString(const byte *input, size_t length) {
+string MD5::__bytesToHexString(const byte *input, size_t length) {
     string str;
     str.reserve(length << 1);
     for(size_t i = 0; i < length; i++) {
@@ -331,5 +331,5 @@ string MD5::bytesToHexString(const byte *input, size_t length) {
  
 /* Convert digest to string value */
 string MD5::toString() {
-    return bytesToHexString(digest(), 16);
+    return __bytesToHexString(digest(), 16);
 }

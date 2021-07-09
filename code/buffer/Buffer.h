@@ -4,8 +4,8 @@
 #include <cstring>   // perror
 #include <iostream>
 #include <unistd.h>  // write
-#include <sys/uio.h> //readv
-#include <vector> //readv
+#include <sys/uio.h> // readv
+#include <vector>
 #include <atomic>
 #include <assert.h>
 #include <algorithm>
