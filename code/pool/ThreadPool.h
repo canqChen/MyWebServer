@@ -45,9 +45,9 @@ public:
             }
     }
 
-    ThreadPool() = default;
+    ThreadPool() = delete;
 
-    ThreadPool(ThreadPool&&) = default;
+    ThreadPool(ThreadPool&&) = delete;
     
     ~ThreadPool() {
         if(static_cast<bool>(mPool)) {
@@ -60,7 +60,7 @@ public:
     }
 
     template<class F>
-    void AddTask(F&& task) {
+    void addTask(F&& task) {
         {
             std::lock_guard<std::mutex> locker(mPool->mtx);  // RAII，创建即加锁，作用域技术析构解锁
             mPool->tasks.emplace(std::forward<F>(task));

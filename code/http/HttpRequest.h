@@ -13,12 +13,17 @@
 #include "../log/Log.h"
 #include "../pool/SqlConnPool.h"
 #include "../pool/SqlConnRAII.h"
+#include "HttpUtils.h"
+
+using std::string;
+using std::unordered_set;
+using std::unordered_map;
 
 class HttpRequest {
 public:
     enum PARSE_STATE {
         REQUEST_LINE,
-        HEADERS,
+        HEADER,
         BODY,
         FINISH,
     };
@@ -34,46 +39,47 @@ public:
         CLOSED_CONNECTION,
     };
     
-    HttpRequest() { Init(); }
+    HttpRequest() { init(); }
     ~HttpRequest() = default;
 
-    void Init();
-    bool Parse(Buffer& buff);
+    void init();
+    void parseRequest(Buffer& buff);
 
-    std::string Path() const;
-    std::string& Path();
-    std::string Method() const;
-    std::string Version() const;
-    std::string GetPost(const std::string& key) const;
-    std::string GetPost(const char* key) const;
+    string getRequestURI() const;
+    HttpMethod getMethod() const;
+    string getHttpVersion() const;
+    string getParameter(const string& name) const;
+    string getParameter(const char* name) const;
 
-    bool IsKeepAlive() const;
+    bool isKeepAlive() const;
+    void getHeader() const;
 
     /* 
-    todo 
+    TODO:
     void HttpConn::ParseFormData() {}
     void HttpConn::ParseJson() {}
     */
 
 private:
-    bool ParseRequestLine(const std::string& line);
-    void ParseHeader(const std::string& line);
-    void ParseBody(const std::string& line);
+    bool __parseRequestLine(const string& line);
+    bool __parseHeader(const string& line);
+    bool __parseBody(const string& line);
+    void __parseGetParameters();
+    void __parsePostBody();
+    void __parseFromUrlencoded();
 
-    void ParsePath();
-    void ParsePost();
-    void ParseFromUrlencoded();
+    static bool UserVerify(const string& name, const string& pwd, bool isLogin);
 
-    static bool UserVerify(const std::string& name, const std::string& pwd, bool isLogin);
-
-    PARSE_STATE mState;
-    std::string mMethod, mResourcePath, mVersion, mBody;
-    std::unordered_map<std::string, std::string> mHeader;
-    std::unordered_map<std::string, std::string> mPost;
-
-    static const std::unordered_set<std::string> DEFAULT_HTML;
-    static const std::unordered_map<std::string, int> DEFAULT_HTML_TAG;
-    static int ConverHex(char ch);
+    PARSE_STATE parseState_;
+    HttpMethod requestMethod_;
+    string requestURI_, requestBody_, httpVersion_, requestURL_;
+    map<string, string> requestHeaders_;
+    map<string, string> requestParameters_;
+    const char * CRLF = "\r\n"; 
+    HttpStatusCode statusCode_;
+    const unordered_map<string, HttpMethod> supportedMethodMap_ = {
+        {"GET", GET}, {"POST", POST}, {"PUT", PUT}, {"DELETE", DELETE}
+    };
 };
 
 

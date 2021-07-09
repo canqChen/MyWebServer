@@ -46,12 +46,12 @@ HttpResponse::HttpResponse() {
 };
 
 HttpResponse::~HttpResponse() {
-    UnmapFile();
+    unmapFile();
 }
 
-void HttpResponse::Init(const string& srcDir, string& resourcePath, bool isKeepAlive, int code){
+void HttpResponse::init(const string& srcDir, string& resourcePath, bool isKeepAlive, int code){
     assert(srcDir != "");
-    if(mMmFile) { UnmapFile(); }
+    if(mMmFile) { unmapFile(); }
     mCode = code;       // 响应码
     mIsKeepAlive = isKeepAlive;
     mResourcePath = resourcePath;       // 资源名字
@@ -60,7 +60,7 @@ void HttpResponse::Init(const string& srcDir, string& resourcePath, bool isKeepA
     mMmFileStat = { 0 };
 }
 
-void HttpResponse::MakeResponse(Buffer& buff) {
+void HttpResponse::makeResponse(Buffer& buff) {
     // 判断请求的资源文件是否存在或者是否是文件
     if(stat((mSrcDir + mResourcePath).data(), &mMmFileStat) < 0 || S_ISDIR(mMmFileStat.st_mode)) {
         mCode = 404;
@@ -72,17 +72,17 @@ void HttpResponse::MakeResponse(Buffer& buff) {
         mCode = 200; 
     }
     ErrorHtml();
-    AddStateLine(buff);
-    AddHeader(buff);
-    AddContent(buff);
+    addStateLine(buff);
+    setHeader(buff);
+    addContent(buff);
 }
 
 // 返回mmap映射到内存的文件内容
-char* HttpResponse::File() {
+char* HttpResponse::getFile() {
     return mMmFile;
 }
 
-size_t HttpResponse::FileLen() const {
+size_t HttpResponse::fileSize() const {
     return mMmFileStat.st_size;
 }
 
@@ -94,7 +94,7 @@ void HttpResponse::ErrorHtml() {
 }
 
 // 响应状态行
-void HttpResponse::AddStateLine(Buffer& buff) {
+void HttpResponse::addStateLine(Buffer& buff) {
     string status;
     if(CODE_TO_STATUS.count(mCode) == 1) {
         status = CODE_TO_STATUS.at(mCode);
@@ -103,24 +103,24 @@ void HttpResponse::AddStateLine(Buffer& buff) {
         mCode = 400;
         status = CODE_TO_STATUS.at(400);
     }
-    buff.Append("HTTP/1.1 " + to_string(mCode) + " " + status + "\r\n");
+    buff.append("HTTP/1.1 " + to_string(mCode) + " " + status + "\r\n");
 }
 
-void HttpResponse::AddHeader(Buffer& buff) {
-    buff.Append("Connection: ");
+void HttpResponse::setHeader(Buffer& buff) {
+    buff.append("Connection: ");
     if(mIsKeepAlive) {
-        buff.Append("keep-alive\r\n");
-        buff.Append("keep-alive: max=6, timeout=120\r\n");
+        buff.append("keep-alive\r\n");
+        buff.append("keep-alive: max=6, timeout=120\r\n");
     } else{
-        buff.Append("close\r\n");
+        buff.append("close\r\n");
     }
-    buff.Append("Content-type: " + GetFileType() + "\r\n");
+    buff.append("Content-type: " + GetFileType() + "\r\n");
 }
 
-void HttpResponse::AddContent(Buffer& buff) {
+void HttpResponse::addContent(Buffer& buff) {
     int srcFd = open((mSrcDir + mResourcePath).data(), O_RDONLY);
     if(srcFd < 0) { 
-        ErrorContent(buff, "File NotFound!");
+        errorContent(buff, "File NotFound!");
         return; 
     }
 
@@ -128,15 +128,15 @@ void HttpResponse::AddContent(Buffer& buff) {
     LOG_DEBUG("file path %s", (mSrcDir + mResourcePath).data());
     int* mmRet = (int*)mmap(0, mMmFileStat.st_size, PROT_READ, MAP_PRIVATE, srcFd, 0);
     if(*mmRet == -1) {
-        ErrorContent(buff, "File NotFound!");
+        errorContent(buff, "File NotFound!");
         return; 
     }
     mMmFile = (char*)mmRet;
     close(srcFd);
-    buff.Append("Content-length: " + to_string(mMmFileStat.st_size) + "\r\n\r\n");
+    buff.append("Content-length: " + to_string(mMmFileStat.st_size) + "\r\n\r\n");
 }
 
-void HttpResponse::UnmapFile() {
+void HttpResponse::unmapFile() {
     if(mMmFile) {
         munmap(mMmFile, mMmFileStat.st_size);
         mMmFile = nullptr;
@@ -156,7 +156,7 @@ string HttpResponse::GetFileType() {
     return "text/plain";
 }
 
-void HttpResponse::ErrorContent(Buffer& buff, string message) 
+void HttpResponse::errorContent(Buffer& buff, string message) 
 {
     string body;
     string status;
@@ -171,6 +171,6 @@ void HttpResponse::ErrorContent(Buffer& buff, string message)
     body += "<p>" + message + "</p>";
     body += "<hr><em>MyWebServer</em></body></html>";
 
-    buff.Append("Content-length: " + to_string(body.size()) + "\r\n\r\n");
-    buff.Append(body);
+    buff.append("Content-length: " + to_string(body.size()) + "\r\n\r\n");
+    buff.append(body);
 }

@@ -21,19 +21,19 @@ typedef Clock::time_point TimeStamp;
 
 class TimerHeap {
 public:
-    TimerHeap() { heap.reserve(64); }   // 预留至少64个空间
+    TimerHeap() { heap_.reserve(64); }   // 预留至少64个空间
 
-    ~TimerHeap() { Clear(); }
+    ~TimerHeap() { __clear(); }
     
-    void Update(int fd, int newExpires);
+    void update(int fd, int newExpires);
 
-    void AddNode(int fd, int timeOut, const TimeoutCallBack& cb);
+    void addNode(int fd, int timeOut, const TimeoutCallBack& cb);
 
     void doWork(int fd);
 
-    void Tick();
+    void tick();
 
-    int GetNextTick();
+    int getNextTick();
 
 private:
     struct TimerNode {
@@ -44,21 +44,21 @@ private:
             return expires < t.expires;
         }
     };
-    void Clear();
+    void __clear();
 
-    void Pop();
+    void __pop();
 
-    void DeleteNode(size_t i);
+    void __deleteNode(size_t i);
     
-    void FloatUp(size_t index);
+    void siftUp(size_t index);
 
-    bool SinkDown(size_t index, size_t n);
+    bool __siftDown(size_t index, size_t n);
 
-    void SwapNode(size_t i, size_t j);
+    void __swapNode(size_t i, size_t j);
 
-    std::vector<TimerNode> heap;    // 小根堆数据结构
+    std::vector<TimerNode> heap_;    // 小根堆数据结构
 
-    std::unordered_map<int, size_t> idx2Map;         // hash表，建立fd->_heap下标的映射
+    std::unordered_map<int, size_t> fd2Idx_;         // hash表，建立fd->heap下标的映射
 };
 
 #endif //HEAP_TIMER_H

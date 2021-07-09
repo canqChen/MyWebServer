@@ -3,60 +3,56 @@
 using namespace std;
 
 const char* HttpClient::srcDir;
-std::atomic<int> HttpClient::userCount;
+std::atomic<size_t> HttpClient::userCount = 0;
 bool HttpClient::isET;
 
 HttpClient::HttpClient() { 
-    socketFd = -1;
-    mAddr = { 0 };
-    mIsClose = true;
+    socketFd_ = -1;
+    addr_ = { 0 };
+    isClose_ = true;
 };
 
-HttpClient::~HttpClient() { 
-    Close(); 
+HttpClient::~HttpClient() {
+    close(); 
 };
 
-void HttpClient::Init(int fd, const sockaddr_in& addr) {
+void HttpClient::init(int fd, const sockaddr_in& addr) {
     assert(fd > 0);
     userCount++;
-    mAddr = addr;
-    socketFd = fd;
-    mWriteBuff.ClearAll();
-    mReadBuff.ClearAll();
-    mIsClose = false;
-    LOG_INFO("Client[%d](%s:%d) in, userCount:%d", socketFd, GetIP(), GetPort(), (int)userCount);
+    addr_ = addr;
+    socketFd_ = fd;
+    writeBuff_.clear();
+    readBuff_.clear();
+    isClose_ = false;
+    LOG_INFO("Client[%d](%s:%d) in, userCount:%d", socketFd_, getRemoteAddr(), getRemotePort(), (int)userCount);
 }
 
-void HttpClient::Close() {
-    mResponse.UnmapFile();
-    if(mIsClose == false){
-        mIsClose = true; 
+void HttpClient::close() {
+    mResponse.unmapFile();
+    if(isClose_ == false) {
+        isClose_ = true;
         userCount--;
-        close(socketFd);
-        LOG_INFO("Client[%d](%s:%d) quit, UserCount:%d", socketFd, GetIP(), GetPort(), (int)userCount);
+        close(socketFd_);
+        LOG_INFO("Client[%d](%s:%d) quit, UserCount:%d", socketFd_, getRemoteAddr(), getRemotePort(), (int)userCount);
     }
 }
 
-int HttpClient::GetFd() const {
-    return socketFd;
+int HttpClient::getFd() const {
+    return socketFd_;
 };
 
-struct sockaddr_in HttpClient::GetAddr() const {
-    return mAddr;
+const char* HttpClient::getRemoteAddr() const {
+    return inet_ntoa(addr_.sin_addr);
 }
 
-const char* HttpClient::GetIP() const {
-    return inet_ntoa(mAddr.sin_addr);
+int HttpClient::getRemotePort() const {
+    return addr_.sin_port;
 }
 
-int HttpClient::GetPort() const {
-    return mAddr.sin_port;
-}
-
-ssize_t HttpClient::Read(int* saveErrno) {
+ssize_t HttpClient::read(int* saveErrno) {
     ssize_t len = -1;
     do {
-        len = mReadBuff.ReadFd(socketFd, saveErrno);
+        len = readBuff_.readFd(socketFd_, saveErrno);
         if (len <= 0) {
             break;
         }
@@ -64,61 +60,60 @@ ssize_t HttpClient::Read(int* saveErrno) {
     return len;
 }
 
-ssize_t HttpClient::Write(int* saveErrno) {
+ssize_t HttpClient::send(int* saveErrno) {
     ssize_t len = -1;
     do {
-        len = writev(socketFd, mIov, mIovCnt);
+        len = writev(socketFd_, iov_, iovCnt_);
         if(len <= 0) {
             *saveErrno = errno;
             break;
         } 
-        if(mIov[0].iov_len + mIov[1].iov_len  == 0) {   // 传输结束 
+        if(iov_[0].iov_len + iov_[1].iov_len  == 0) {   // 传输结束 
             break;
         } 
-        else if(static_cast<size_t>(len) > mIov[0].iov_len) {       // 一次没写完，更新下次写的起始位置和待写的长度
-            mIov[1].iov_base = (uint8_t*) mIov[1].iov_base + (len - mIov[0].iov_len);
-            mIov[1].iov_len -= (len - mIov[0].iov_len);
-            if(mIov[0].iov_len) {
-                mWriteBuff.ClearAll();
-                mIov[0].iov_len = 0;
+        else if(static_cast<size_t>(len) > iov_[0].iov_len) {       // 一次没写完，更新下次写的起始位置和待写的长度
+            iov_[1].iov_base = (uint8_t*) iov_[1].iov_base + (len - iov_[0].iov_len);
+            iov_[1].iov_len -= (len - iov_[0].iov_len);
+            if(iov_[0].iov_len) {
+                writeBuff_.clear();
+                iov_[0].iov_len = 0;
             }
         }
         else {
-            mIov[0].iov_base = (uint8_t*)mIov[0].iov_base + len; 
-            mIov[0].iov_len -= len;
-            mWriteBuff.UpdateRead(len);
+            iov_[0].iov_base = (uint8_t*)iov_[0].iov_base + len; 
+            iov_[0].iov_len -= len;
+            writeBuff_.updateReadPos(len);
         }
     } while(isET || ToWriteBytes() > 10240);
     return len;
 }
 
-bool HttpClient::Process() {
-    mRequest.Init();
-    if(mReadBuff.ReadableBytes() <= 0) {  // 无数据可处理
+bool HttpClient::process() {
+    mRequest.init();
+    if(readBuff_.readableBytes() <= 0) {  // 无数据可处理
         return false;
     }
-    else if(mRequest.Parse(mReadBuff)) {        // 解析请求http报文
+    else if(mRequest.parseRequest(readBuff_)) {        // 解析请求http报文
         LOG_DEBUG("%s", mRequest.Path().c_str());
-        mResponse.Init(srcDir, mRequest.Path(), mRequest.IsKeepAlive(), 200);       // 200 OK
+        mResponse.init(srcDir, mRequest.Path(), mRequest.isKeepAlive(), 200);       // 200 OK
     }
     else {
-        mResponse.Init(srcDir, mRequest.Path(), false, 400);        // 400 请求错误
+        mResponse.init(srcDir, mRequest.Path(), false, 400);        // 400 请求错误
     }
 
     // 完成解析后准备响应内容
-
-    mResponse.MakeResponse(mWriteBuff);
+    mResponse.makeResponse(writeBuff_);
     // http响应状态行和消息头，在mIov[0]
-    mIov[0].iov_base = const_cast<char*>(mWriteBuff.ReadBeginPointer());
-    mIov[0].iov_len = mWriteBuff.ReadableBytes();
-    mIovCnt = 1;
+    iov_[0].iov_base = const_cast<char*>(writeBuff_.readPtr());
+    iov_[0].iov_len = writeBuff_.readableBytes();
+    iovCnt_ = 1;
 
     // http消息体，由文件经mmap映射到内存中
-    if(mResponse.FileLen() > 0  && mResponse.File()) {
-        mIov[1].iov_base = mResponse.File();
-        mIov[1].iov_len = mResponse.FileLen();
-        mIovCnt = 2;
+    if(mResponse.fileSize() > 0  && mResponse.getFile()) {
+        iov_[1].iov_base = mResponse.getFile();
+        iov_[1].iov_len = mResponse.fileSize();
+        iovCnt_ = 2;
     }
-    LOG_DEBUG("filesize:%d, %d  to %d", mResponse.FileLen() , mIovCnt, ToWriteBytes());
+    LOG_DEBUG("filesize:%d, %d  to %d", mResponse.fileSize() , iovCnt_, ToWriteBytes());
     return true;
 }

@@ -4,8 +4,8 @@
 using namespace std;
 
 SqlConnPool::SqlConnPool() {
-    mUseCount = 0;
-    mFreeCount = 0;
+    useCount_ = 0;
+    freeCount_ = 0;
 }
 
 SqlConnPool* SqlConnPool::GetInstance() {
@@ -31,29 +31,29 @@ void SqlConnPool::Init(const char* host, int port,
         if (!sql) {
             LOG_ERROR("MySql Connect error!");
         }
-        mConnQueue.push(sql);
+        connQueue_.push(sql);
     }
-    mDBName = std::move(std::string(dbName));
-    mMaxConn = connSize;
-    sem_init(&mSemId, 0, mMaxConn);
+    dbName = std::move(std::string(dbName));
+    maxConn_ = connSize;
+    sem_init(&semId_, 0, maxConn_);
 }
 
 const char * SqlConnPool::GetDBName() const{
-    return mDBName.c_str();
+    return dbName_.c_str();
 }
 
 // 获得一个连接
 MYSQL* SqlConnPool::GetConn() {
     MYSQL *sql = nullptr;
-    if(mConnQueue.empty()){
+    if(connQueue_.empty()){
         LOG_WARN("SqlConnPool busy!");
         return nullptr;
     }
-    sem_wait(&mSemId);
+    sem_wait(&semId_);
     {
-        lock_guard<mutex> locker(mMtx);   
-        sql = mConnQueue.front();
-        mConnQueue.pop();
+        lock_guard<mutex> locker(mtx_);   
+        sql = connQueue_.front();
+        connQueue_.pop();
     }
     return sql;
 }
@@ -61,16 +61,16 @@ MYSQL* SqlConnPool::GetConn() {
 // 释放连接，归还sql连接池
 void SqlConnPool::FreeConn(MYSQL* sql) {
     assert(sql);
-    lock_guard<mutex> locker(mMtx);
-    mConnQueue.push(sql);
-    sem_post(&mSemId);
+    lock_guard<mutex> locker(mtx_);
+    connQueue_.push(sql);
+    sem_post(&semId_);
 }
 
 void SqlConnPool::ClosePool() {
-    lock_guard<mutex> locker(mMtx);
-    while(!mConnQueue.empty()) {
-        auto item = mConnQueue.front();
-        mConnQueue.pop();
+    lock_guard<mutex> locker(mtx_);
+    while(!connQueue_.empty()) {
+        auto item = connQueue_.front();
+        connQueue_.pop();
         mysql_close(item);
     }
     mysql_library_end();
@@ -78,8 +78,8 @@ void SqlConnPool::ClosePool() {
 
 // 空闲连接数量
 int SqlConnPool::GetFreeConnCount() {
-    lock_guard<mutex> locker(mMtx);
-    return mConnQueue.size();
+    lock_guard<mutex> locker(mtx_);
+    return connQueue_.size();
 }
 
 SqlConnPool::~SqlConnPool() {

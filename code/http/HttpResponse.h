@@ -16,19 +16,21 @@ public:
     HttpResponse();
     ~HttpResponse();
 
-    void Init(const std::string& srcDir, std::string& resourcePath, bool isKeepAlive = false, int code = -1);
-    void MakeResponse(Buffer& buff);
-    void UnmapFile();
-    char* File();
-    size_t FileLen() const;
-    void ErrorContent(Buffer& buff, std::string message);
+    void init(const std::string& srcDir, std::string& resourcePath, bool isKeepAlive = false, int code = -1);
+    void makeResponse(Buffer& buff);
+    void unmapFile();
+    char* getFile();
+    size_t fileSize() const;
+    void errorContent(Buffer& buff, std::string message);
     int Code() const { return mCode; }
 
-private:
-    void AddStateLine(Buffer &buff);
-    void AddHeader(Buffer &buff);
-    void AddContent(Buffer &buff);
+    void addStateLine(Buffer &buff);
+    void setHeader(Buffer &buff);
+    void addContent(Buffer &buff);
+    void setCookie(string name, string value);
+    void setContentType(String type);
 
+private:
     void ErrorHtml();
     std::string GetFileType();
 

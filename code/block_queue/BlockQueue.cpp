@@ -23,10 +23,22 @@ void BlockQueue<T>::close() {
     consumerCond_.notify_all();
 }
 
-// 唤醒消费者，写入日志
+// 唤醒消费者
 template<class T>
 void BlockQueue<T>::flush() {
-    consumerCond_.notify_all();
+    std::lock_guard<std::mutex> locker(mtx_);
+    consumerCond_.notify_one();
+}
+
+// 清空队列，只用于日志系统
+template<class T>
+void BlockQueue<T>::flushAll(FILE * fp) {
+    std::lock_guard<std::mutex> locker(mtx_);
+    while(!queue_.empty()) {
+        T str = queue_.front();
+        queue_.pop();
+        fputs(str.c_str(), fp_);
+    }
 }
 
 template<class T>
@@ -43,13 +55,13 @@ T& BlockQueue<T>::front() {
 }
 
 template<class T>
-size_t BlockQueue<T>::size() {
+size_t BlockQueue<T>::size() const {
     std::lock_guard<std::mutex> locker(mtx_);
     return queue_.size();
 }
 
 template<class T>
-size_t BlockQueue<T>::capacity() {
+size_t BlockQueue<T>::capacity() const{
     return capacity_;
 }
 
@@ -61,17 +73,18 @@ void BlockQueue<T>::push_back(const T &item) {
         producerCond_.wait(locker);     // 释放锁，阻塞
     }
     queue_.push(item);
+    locker.unlock();
     consumerCond_.notify_one();
 }
 
 template<class T>
-bool BlockQueue<T>::empty() {
+bool BlockQueue<T>::empty() const{
     std::lock_guard<std::mutex> locker(mtx_);
     return queue_.empty();
 }
 
 template<class T>
-bool BlockQueue<T>::full(){
+bool BlockQueue<T>::full() const{
     std::lock_guard<std::mutex> locker(mtx_);
     return queue_.size() >= capacity_;
 }
@@ -88,25 +101,27 @@ bool BlockQueue<T>::pop(T &item) {
     }
     item = queue_.front();
     queue_.pop();
+    locker.unlock();
     producerCond_.notify_one();
     return true;
 }
 
 // 消费者-队首弹出，增加超时处理
 template<class T>
-bool BlockQueue<T>::Pop(T &item, int timeout) {
+bool BlockQueue<T>::pop(T &item, int timeout) {
     std::unique_lock<std::mutex> locker(mtx_);
     while(queue_.empty()){
         if(consumerCond_.wait_for(locker, std::chrono::seconds(timeout)) 
                 == std::cv_status::timeout){
             return false;
         }
-        if(mClose){
+        if(mClose) {
             return false;
         }
     }
     item = queue_.front();
     queue_.pop();
+    locker.unlock();
     producerCond_.notify_one();
     return true;
 }

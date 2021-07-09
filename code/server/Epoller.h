@@ -15,22 +15,22 @@ public:
 
     ~Epoller();
 
-    bool AddFd(int fd, uint32_t events);
+    bool addFd(int fd, uint32_t events);
 
-    bool ModFd(int fd, uint32_t events);
+    bool modFd(int fd, uint32_t events);
 
-    bool DelFd(int fd);
+    bool delFd(int fd);
 
-    int Wait(int timeoutMs = -1);
+    int wait(int timeoutMs = -1);
 
-    int GetFdByEvent(size_t i) const;
+    int getFdByEvent(size_t i) const;
 
-    uint32_t GetEvent(size_t i) const;
+    uint32_t getEvent(size_t i) const;
         
 private:
-    int _epollFd;
+    int epollFd_;
 
-    std::vector<struct epoll_event> _events;    
+    std::vector<struct epoll_event> events_;    
 };
 
 #endif //EPOLLER_H

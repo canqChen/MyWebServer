@@ -2,135 +2,134 @@
 #include "HttpRequest.h"
 using namespace std;
 
-const unordered_set<string> HttpRequest::DEFAULT_HTML{
-            "/index", "/register", "/login",
-            "/welcome", "/video", "/picture", };
-
-const unordered_map<string, int> HttpRequest::DEFAULT_HTML_TAG {
-            {"/register.html", 0}, {"/login.html", 1},  };
-
-void HttpRequest::Init() {
-    mMethod = mResourcePath = mVersion = mBody = "";
-    mState = REQUEST_LINE;
-    mHeader.clear();
-    mPost.clear();
+void HttpRequest::init() {
+    requestURI_ = httpVersion_ = requestBody_ = "";
+    requestMethod_ = HttpMethod::UNKNOWN;
+    statusCode_ = HttpStatusCode::OK200;
+    parseState_ = REQUEST_LINE;
+    requestHeaders_.clear();
+    requestParameters_.clear();
 }
 
-bool HttpRequest::IsKeepAlive() const {
-    if(mHeader.count("Connection") == 1) {
-        return mHeader.at("Connection") == "keep-alive" && mVersion == "1.1";
+bool HttpRequest::isKeepAlive() const {
+    if(requestHeaders_.count("Connection") == 1) {
+        return requestHeaders_.at("Connection") == "keep-alive" && httpVersion_ == "1.1";
     }
     return false;
 }
 
 // 解析http请求
-bool HttpRequest::Parse(Buffer& buff) {
-    const char CRLF[] = "\r\n";
-    if(buff.ReadableBytes() <= 0) {
+void HttpRequest::parseRequest(Buffer& buff) {
+    if(buff.readableBytes() <= 0) {
         return false;
     }
     // 有限状态机，解析http请求
-    while(buff.ReadableBytes() && mState != FINISH) {
-        const char* lineEnd = search(buff.ReadBeginPointer(), buff.NextWriteBeginPointerConst(), CRLF, CRLF + 2);  // 读取一行
-        std::string line(buff.ReadBeginPointer(), lineEnd);
-        switch(mState)
+    parseState_ = REQUEST_LINE;
+    while(buff.readableBytes() > 0 && parseState_ != FINISH) {
+        // 截取请求的一行
+        const char* lineEnd = buff.findCRLF();  
+        string line = buff.retrieveUtil(lineEnd); // 读取一行
+        // 状态机解析请求
+        switch(parseState_)
         {
         case REQUEST_LINE:  //  请求行
-            if(!ParseRequestLine(line)) {
-                return false;
+            if(!__parseRequestLine(line)) {
+                return;
             }
-            ParsePath();
-            mState = HEADERS;
+            parseState_ = HEADER;
             break;
-        case HEADERS:       // 头部
-            ParseHeader(line);
-            if(buff.ReadableBytes() <= 2) {
-                mState = FINISH;
+        case HEADER:       // 头部
+            if(!__parseHeader(line)) // 返回false，解析完毕，进入下一状态
+                parseState_ = BODY;
+            if(buff.readableBytes() <= 2) { // get请求，到达末尾，没有请求体
+                return;
             }
             break;
-        case BODY:          // 主体
-            ParseBody(line);
+        case BODY:          // 请求体
+            __parseBody(line);
+            parseState_ = FINISH;
             break;
-        default:
+        default: // FINISH
             break;
         }
-
-        if(lineEnd == buff.NextWriteBeginPointer()) { 
-            break; 
+        if(lineEnd == buff.writePtr()) { // 末尾
+            break;
         }
-        buff.UpdateReadUntil(lineEnd + 2);
+        // 跳过CRLF
+        buff.updateReadPos(lineEnd + 2);
     }
-    LOG_DEBUG("[%s], [%s], [%s]", mMethod.c_str(), mResourcePath.c_str(), mVersion.c_str());
+    LOG_DEBUG("[%s], [%s], [%s]", requestMethod_.c_str(), requestURI_.c_str(), requestMethod_.c_str());
     return true;
 }
 
-void HttpRequest::ParsePath() {
-    if(mResourcePath == "/") {          // 默认路径
-        mResourcePath = "/index.html"; 
-    }
-    else {
-        for(auto &item: DEFAULT_HTML) {     // 指定文件
-            if(item == mResourcePath) {
-                mResourcePath += ".html";
-                break;
-            }
-        }
-    }
-}
-
-bool HttpRequest::ParseRequestLine(const string& line) {
+bool HttpRequest::__parseRequestLine(const string& line) {
     regex patten("^([^ ]*) ([^ ]*) HTTP/([^ ]*)$");  // method url http/1.1
     smatch subMatch;
-    if(regex_match(line, subMatch, patten)) {   
-        mMethod = subMatch[1];
-        mResourcePath = subMatch[2];
-        mVersion = subMatch[3];
-        
+    if(regex_match(line, subMatch, patten)) {
+        string methodStr = subMatch[1];
+        if(supportedMethodMap_.count(methodStr) > 0) {
+            requestMethod_ = supportedMethodMap_.at(methodStr);
+        }
+        else { // 请求方法不支持
+            requestMethod_ = UNKNOWN;
+            statusCode_ = MethodNotAllow405;
+            return false;
+        }
+        requestURL_ = subMatch[2];
+        requestMethod_ = subMatch[3];
         return true;
     }
-    LOG_ERROR("RequestLine Error");
+    LOG_ERROR("RequestLine Error: %s", line.c_str());
+    statusCode_ = BadRequest400;    // 请求行解析失败，请求有误
     return false;
 }
 
-void HttpRequest::ParseHeader(const string& line) {
+bool HttpRequest::__parseHeader(const string& line) {
     regex patten("^([^:]*): ?(.*)$");  // opt: val
     smatch subMatch;
     if(regex_match(line, subMatch, patten)) {
-        mHeader[subMatch[1]] = subMatch[2];
+        requestHeaders_[subMatch[1]] = subMatch[2];
+        LOG_DEBUG("header: %s, value: %s", sub_match[1].c_str(), sub_match[2].c_str());
+        return true;
     }
-    else {
-        mState = BODY;
-    }
+    // 匹配失败，遇到空行，状态到解析body
+    return false;
 }
 
-void HttpRequest::ParseBody(const string& line) {
-    mBody = line;
-    ParsePost();    // post方法处理
-    mState = FINISH;
+bool HttpRequest::__parseBody(const string& line) {
+    requestBody_ = line;
+    __parsePost();    // post方法处理
     LOG_DEBUG("Body:%s, len:%d", line.c_str(), line.size());
 }
 
-void HttpRequest::ParsePost() {
-    if(mMethod == "POST" && mHeader["Content-Type"] == "application/x-www-form-urlencoded") {
-        ParseFromUrlencoded();
-        if(DEFAULT_HTML_TAG.count(mResourcePath)) {   // 仅register.html 和 login.html 支持post方法
-            int tag = DEFAULT_HTML_TAG.at(mResourcePath);
+void HttpRequest::__parseGetParameters() {
+    if(requestMethod_ == HttpMethod::GET) {
+
+    }
+}
+
+void HttpRequest::__parsePostBody() {
+    if(requestMethod_ == HttpMethod::POST && requestHeaders_["Content-Type"] == "application/x-www-form-urlencoded") {
+        __parseFromUrlencoded();
+        if(DEFAULT_HTML_TAG.count(requestURI_)) {   // 仅register.html 和 login.html 支持post方法
+            int tag = DEFAULT_HTML_TAG.at(requestURI_);
             LOG_DEBUG("Tag:%d", tag);
             if(tag == 0 || tag == 1) {
                 bool isLogin = (tag == 1);
-                if(UserVerify(mPost["username"], mPost["password"], isLogin)) {   // 验证用户密码是否正确
-                    mResourcePath = "/welcome.html";
+                if(UserVerify(requestParameters_["username"], requestParameters_["password"], isLogin)) {   // 验证用户密码是否正确
+                    requestURI_ = "/welcome.html";
                 }
                 else {
-                    mResourcePath = "/error.html";
+                    requestURI_ = "/error.html";
                 }
             }
         }
-    }   
+    }
 }
 
-// 编码：用于键值对参数，参数之间用&间隔, 如果有空格，将空格转换为+加号；=号前是key；有特殊符号，用%标记，并将特殊符号转换为ASCII HEX值
 /*
+编码：用于键值对参数，参数之间用&间隔, 如果有空格，将空格转换为+加号；=号前是key；有特殊符号，用%标记，并将特殊符号转换为ASCII HEX值
+
 1. 字母数字字符 "a" 到 "z"、"A" 到 "Z" 和 "0" 到 "9" 保持不变。
 
 2. 特殊字符 "."、"-"、"*" 和 "_" 保持不变。
@@ -140,34 +139,41 @@ void HttpRequest::ParsePost() {
 4. 所有其他字符都是不安全的，因此首先使用一些编码机制将它们转换为一个或多个字节。然后每个字节用一个包含 3 个字符的字符串 "%xy" 表示，
 其中 xy 为该字节的两位十六进制表示形式。编码机制是 UTF-8。
 */
-void HttpRequest::ParseFromUrlencoded() {
-    if(mBody.size() == 0) { return; }
-
+void HttpRequest::__parseFromUrlencoded() {
+    if(requestBody_.size() == 0) { return; }
     string key, value;
     int num = 0;
-    int n = mBody.size();
+    int n = requestBody_.size();
     int i = 0, j = 0;
 
+    auto convert2Hex = [](char ch)->int {
+        if(ch >= 'A' && ch <= 'F') 
+            return ch -'A' + 10;
+        if(ch >= 'a' && ch <= 'f') 
+            return ch -'a' + 10;
+        return ch;
+    };
+
     for(; i < n; i++) {
-        char ch = mBody[i];
+        char ch = requestBody_[i];
         switch (ch) {
         case '=':
-            key = mBody.substr(j, i - j);
+            key = requestBody_.substr(j, i - j);
             j = i + 1;
             break;
         case '+':
-            mBody[i] = ' ';
+            requestBody_[i] = ' ';
             break;
         case '%':
-            num = ConverHex(mBody[i + 1]) * 16 + ConverHex(mBody[i + 2]);
-            mBody[i + 2] = num % 10 + '0';
-            mBody[i + 1] = num / 10 + '0';
+            num = convert2Hex(requestBody_[i + 1]) * 16 + convert2Hex(requestBody_[i + 2]);
+            requestBody_[i + 2] = num % 10 + '0';
+            requestBody_[i + 1] = num / 10 + '0';
             i += 2;
             break;
         case '&':
-            value = mBody.substr(j, i - j);
+            value = requestBody_.substr(j, i - j);
             j = i + 1;
-            mPost[key] = value;
+            requestParameters_[key] = value;
             LOG_DEBUG("%s = %s", key.c_str(), value.c_str());
             break;
         default:
@@ -175,16 +181,10 @@ void HttpRequest::ParseFromUrlencoded() {
         }
     }
     assert(j <= i);
-    if(mPost.count(key) == 0 && j < i) {
-        value = mBody.substr(j, i - j);
-        mPost[key] = value;
+    if(requestParameters_.count(key) == 0 && j < i) {
+        value = requestBody_.substr(j, i - j);
+        requestParameters_[key] = value;
     }
-}
-
-int HttpRequest::ConverHex(char ch) {
-    if(ch >= 'A' && ch <= 'F') return ch -'A' + 10;
-    if(ch >= 'a' && ch <= 'f') return ch -'a' + 10;
-    return ch;
 }
 
 bool HttpRequest::UserVerify(const string &name, const string &pwd, bool isLogin) {
@@ -251,33 +251,29 @@ bool HttpRequest::UserVerify(const string &name, const string &pwd, bool isLogin
     return flag;
 }
 
-std::string HttpRequest::Path() const{
-    return mResourcePath;
+string HttpRequest::getRequestURI() const{
+    return requestURI_;
 }
 
-std::string& HttpRequest::Path(){
-    return mResourcePath;
-}
-std::string HttpRequest::Method() const {
-    return mMethod;
+HttpMethod HttpRequest::getMethod() const {
+    return requestMethod_;
 }
 
-std::string HttpRequest::Version() const {
-    return mVersion;
+string HttpRequest::getHttpVersion() const {
+    return requestMethod_;
 }
 
-std::string HttpRequest::GetPost(const std::string& key) const {
+string HttpRequest::getParameter(const string & name) const {
     assert(key != "");
-    if(mPost.count(key) == 1) {
-        return mPost.at(key);
+    if(requestParameters_.count(name) == 1) {
+        return requestParameters_.at(name);
     }
     return "";
 }
 
-std::string HttpRequest::GetPost(const char* key) const {
-    assert(key != nullptr);
-    if(mPost.count(key) == 1) {
-        return mPost.at(key);
-    }
-    return "";
+string HttpRequest::getParameter(const char* name) const {
+    if(name == nullptr)
+        return "";
+    string key(name);
+    return getParameter(key);
 }

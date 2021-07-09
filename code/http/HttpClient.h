@@ -14,59 +14,58 @@
 #include "HttpRequest.h"
 #include "HttpResponse.h"
 
-// http连接客户类，每个对象为一个客户
+// http连接客户类，每个对象为一个http(长)连接
 class HttpClient {
 public:
     HttpClient();
 
     ~HttpClient();
 
-    void Init(int sockFd, const sockaddr_in& addr);
+    void init(int sockFd, const sockaddr_in& addr);
 
-    ssize_t Read(int* saveErrno);
+    ssize_t read(int* saveErrno);
 
-    ssize_t Write(int* saveErrno);
+    ssize_t send(int* saveErrno);
 
-    void Close();
+    void close();
 
-    int GetFd() const;
+    int getFd() const;
 
-    int GetPort() const;
+    int getRemotePort() const;
 
-    const char* GetIP() const;
+    const char* getRemoteAddr() const;
     
-    sockaddr_in GetAddr() const;
-    
-    bool Process();
+    bool process();
 
-    // 待写mIov中总字节数
-    int ToWriteBytes() { 
-        return mIov[0].iov_len + mIov[1].iov_len; 
+    // 待写iov_中总字节数
+    int ToWriteBytes() const {
+        return iov_[0].iov_len + iov_[1].iov_len; 
     }
 
-    bool IsKeepAlive() const {
-        return mRequest.IsKeepAlive();
+    bool isKeepAlive() const {
+        return mRequest.isKeepAlive();
     }
 
-    static bool isET;
+    bool isET;
     static const char* srcDir;
-    static std::atomic<int> userCount;
-    
+    static std::atomic<size_t> userCount;
 private:
-   
-    int socketFd;       // socket连接的fd
-    struct sockaddr_in mAddr;      // 客户地址， uint32_t
+    int socketFd_;       // socket连接的fd
+    struct sockaddr_in addr_;      // 客户地址， uint32_t
 
-    bool mIsClose;
+    bool isClose_;
     
-    int mIovCnt;
-    struct iovec mIov[2];
+    int iovCnt_;
+    struct iovec iov_[2];
     
-    Buffer mReadBuff; // 读缓冲区
-    Buffer mWriteBuff; // 写缓冲区
+    Buffer readBuff_; // 读缓冲区
+    Buffer writeBuff_; // 写缓冲区
 
     HttpRequest mRequest;       // 处理请求
     HttpResponse mResponse;     // 处理响应
+
+    unique_ptr<HttpRequest> httpRequest_;
+    unique_ptr<HttpResponse> httpResponse_;
 };
 
 

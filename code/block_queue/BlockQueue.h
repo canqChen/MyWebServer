@@ -12,7 +12,7 @@
 template<class T>
 class BlockQueue {
 public:
-    explicit BlockQueue(size_t MaxCapacity = 1000);
+    explicit BlockQueue(size_t MaxCapacity = 1024);
 
     ~BlockQueue();
 
@@ -35,14 +35,16 @@ public:
     bool pop(T &item);
 
     bool pop(T &item, int timeout);
-
+    // 唤醒消费者
     void flush();
+    // 清空队列
+    void flushAll(FILE * fp);
 private:
     std::queue<T> queue_;
 
     size_t capacity_;
 
-    std::mutex mtx_;
+    mutable std::mutex mtx_;
 
     bool isClose_;
 

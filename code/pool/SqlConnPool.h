@@ -25,21 +25,21 @@ public:
 
     const char * GetDBName() const;
 
+    SqlConnPool() = delete;
     SqlConnPool(const SqlConnPool &) = delete;
     SqlConnPool & operator = (const SqlConnPool&) = delete;
 
 private:
-    SqlConnPool();
     ~SqlConnPool();
 
-    std::string  mDBName;
-    int mMaxConn;
-    int mUseCount;
-    int mFreeCount;
+    std::string  dbName_;
+    int maxConn_;
+    int useCount_;
+    int freeCount_;
 
-    std::queue<MYSQL *> mConnQueue;  // sql连接池队列
-    std::mutex mMtx;        // 互斥锁
-    sem_t mSemId;       // 信号量，初始值为最大连接数
+    std::queue<MYSQL *> connQueue_;  // sql连接池队列
+    std::mutex mtx_;        // 互斥锁
+    sem_t semId_;       // 信号量，初始值为最大连接数
 };
 
 

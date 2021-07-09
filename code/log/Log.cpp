@@ -15,21 +15,13 @@ Log::Log()
 
 Log::~Log()
 {
-    if (writeThread_ && writeThread_->joinable())
-    {
-        while (!blockQueue_->empty())
-        {
-            blockQueue_->flush();
-        }
+    lock_guard<mutex> locker(mtx_);
+    if (writeThread_ && writeThread_->joinable() && fp_) {
+        __flushAll();
         blockQueue_->close();
         writeThread_->join();
     }
-    if (fp_)
-    {
-        lock_guard<mutex> locker(mtx_);
-        __flush();
-        fclose(fp_);
-    }
+    fclose(fp_);
 }
 
 LogLevel Log::getLevel()
@@ -53,7 +45,7 @@ void Log::init(LogLevel level = INFO, const char *path, const char *suffix,
 
     if (!blockQueue_)
     {
-        unique_ptr<BlockQueue<std::string>> newQueue(new BlockQueue<std::string>);
+        unique_ptr<BlockQueue<std::string> > newQueue(new BlockQueue<std::string>);
         blockQueue_ = std::move(newQueue);
 
         std::unique_ptr<std::thread> NewThread(new thread(__flushLogThread)); // 创建线程异步写日志
@@ -67,11 +59,11 @@ void Log::init(LogLevel level = INFO, const char *path, const char *suffix,
     auto sysTime = __getSysTime();
     // 短时间内重启服务器，fileIdx_可能不是从0开始，不过因为文件名加入了pid，所以重叠的可能性很小
     __determineLogIdx(sysTime);
-    auto fileName = __getFileName(sysTime);
+    auto fileName = __genFileName(sysTime);
     __openFile(fileName);
 }
 
-string Log::__getFileName(struct tm sysTime){
+string Log::__genFileName(struct tm sysTime){
     char fileName[LOG_NAME_LEN] = {'\0'};
     snprintf(fileName, LOG_NAME_LEN - 1, "%s/%04d-%02d-%02d-%d-%d%s",
              logPath_, sysTime.tm_year + 1900, sysTime.tm_mon + 1, sysTime.tm_mday, getpid(), fileIdx_, suffix_); // 命名为 年-月-日-pid-序号.log 的日志文件
@@ -86,7 +78,7 @@ struct tm Log::__getSysTime(){
     return *sysTime;
 }
 
-void Log::__openFile(string fileName){
+void Log::__openFile(string fileName) {
     if(access(logPath_, F_OK) != 0) {
         umask(0);
         mkdir(logPath_, 0777);
@@ -104,7 +96,7 @@ void Log::__openFile(string fileName){
 
 // 只在init时使用，确定起始文件名(fileIdx_)
 void Log::__determineLogIdx(struct tm sysTime) {
-    while(access(__getFileName(sysTime), F_OK) == 0) {
+    while(access(__genFileName(sysTime), F_OK) == 0) {
         ++fileIdx_;
     }
 }
@@ -122,10 +114,10 @@ void Log::logBase(LogLevel level, const char *format, ...)
 }
 
 // 检查写入日志日期是否为保存的today_，日志行数是否超过最大限制，不满足则新建文件
-void Log::__changeWritenFile(struct tm sysTime){
+void Log::__changeLogFile(struct tm sysTime) {
     string fileName;
     // 将日志队列里面的旧日志清空
-    __flush();
+    __flushAll();
     // 如果是时间不是今天，则创建今天的日志，更新today_和lineCount_
     if (today_ != t.tm_mday)
     {
@@ -133,7 +125,7 @@ void Log::__changeWritenFile(struct tm sysTime){
         fileIdx_ = 0;
         // 新日志文件，行数从0开始
         lineCount_ = 0;
-        fileName = __getFileName(sysTime);
+        fileName = __genFileName(sysTime);
         // 更新“今天”
         today_ = sysTime.tm_mday;
     }
@@ -143,7 +135,7 @@ void Log::__changeWritenFile(struct tm sysTime){
         ++fileIdx_;
         // 新日志文件，行数从0开始
         lineCount_ = 0;
-        fileName = __getFileName(sysTime);
+        fileName = __genFileName(sysTime);
     }
     __openFile(fileName);
 }
@@ -167,6 +159,7 @@ void Log::__write(LogLevel level, const char *format, va_list vaList)
 {
     // 加锁检查是否需要更新写入的日志文件
     // 获取当前系统时间
+    Buffer buff;
     struct timeval now = {0, 0};
     gettimeofday(&now, nullptr);
     time_t tSec = now.tv_sec;
@@ -177,56 +170,61 @@ void Log::__write(LogLevel level, const char *format, va_list vaList)
 
     // 如果是时间不是今天，或单文件超过了最大行
     if(today_ != t.tm_mday || lineCount_ >= MAX_LINES){
-        __changeWritenFile(*sysTime);
+        __changeLogFile(*sysTime);
     }
     
     locker.unlock();
 
     // 日志时间戳
-    int n = snprintf(buff_.writePosPointer(), 128, "%d-%02d-%02d %02d:%02d:%02d.%06ld ",  // 年-月-日 hh-mm-ss.us
+    int n = snprintf(buff.writePtr(), 128, "%d-%02d-%02d %02d:%02d:%02d.%06ld ",  // 年-月-日 hh-mm-ss.us
                         sysTime->tm_year + 1900, sysTime->tm_mon + 1, sysTime->tm_mday,
                         sysTime->tm_hour, sysTime->tm_min, sysTime->tm_sec, tv.tv_usec);
 
-    buff_.updateWritePos(n);
-    __appendLogLevelTitle(level);
+    buff.updateWritePos(n);
+    __appendLogLevelTitle(level, buff);
 
-    int m = vsnprintf(buff_.writePosPointer(), buff_.WritableBytes(), format, vaList);
+    int m = vsnprintf(buff.writePtr(), buff.writableBytes(), format, vaList);
 
-    buff_.updateWritePos(m);
-    buff_.append("\n\0", 2);
+    buff.updateWritePos(m);
+    buff.append("\n\0", 2);
 
     // 将日志信息加入阻塞队列,同步则加锁向文件中写
     // 队列满，则阻塞等待，ClearAllToStr清空buff并返回string
-    blockQueue_->push_back(buff_.RetriveToStr());
+    blockQueue_->push_back(buff.retrieveAll2String());
 }
 
-void Log::__appendLogLevelTitle(LogLevel level)
+void Log::__appendLogLevelTitle(LogLevel level, Buffer & buff)
 {
     switch (level)
     {
     case DEBUG:
-        buff_.append("[debug]: ", 9);
+        buff.append("[debug]: ", 9);
         break;
     case INFO:
-        buff_.append("[info] : ", 9);
+        buff.append("[info] : ", 9);
         break;
     case WARN:
-        buff_.append("[warn] : ", 9);
+        buff.append("[warn] : ", 9);
         break;
     case ERROR:
-        buff_.append("[error]: ", 9);
+        buff.append("[error]: ", 9);
         break;
     default:
-        buff_.append("[info] : ", 9);
+        buff.append("[info] : ", 9);
         break;
     }
 }
 
 // 插入一则日志，__flush一次，唤醒一个消费者(pop)，__asyncWrite 执行异步写
-void Log::__flush()
-{
+void Log::__flush() {
     blockQueue_->flush();
-    fflush(fp_); // fflush()会强迫将缓冲区内的数据写回参数fp_指定的文件中，防止与下次写入日志混合
+}
+
+// 清空队列中的日志，日志写满时调用
+void Log::__flushAll()
+{
+    blockQueue_->flushAll(fp_);
+    fflush(fp_); // fflush()会强迫将缓冲区内的数据写回参数fp_指定的文件中，防止写入下个日志文件
 }
 
 void Log::__asyncWrite()

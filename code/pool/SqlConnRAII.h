@@ -9,17 +9,19 @@ public:
     SqlConnRAII(MYSQL** sql, SqlConnPool *connpool) {
         assert(connpool);
         *sql = connpool->GetConn();
-        mSql = *sql;
-        mConnPool = connpool;
+        sql_ = *sql;
+        connPool_ = connpool;
     }
     
     ~SqlConnRAII() {
-        if(mSql) { mConnPool->FreeConn(mSql); }
+        if(sql_) { 
+            connPool_->FreeConn(sql_); 
+        }
     }
     
 private:
-    MYSQL *mSql;
-    SqlConnPool* mConnPool;
+    MYSQL *sql_;
+    SqlConnPool* connPool_;
 };
 
 #endif //SQLCONNRAII_H
