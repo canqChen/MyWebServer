@@ -3,12 +3,13 @@
 
 #include "../common/NoCopyable.h"
 #include "./Timer.h"
+#include "./Epoller.h"
 
-class Epoller;
 class Channel;
 
 // one loop per thread
-class EventLoop : NoCopyable{
+class EventLoop : NoCopyable
+{
 public:
     EventLoop();
     ~EventLoop();

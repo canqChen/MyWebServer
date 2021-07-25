@@ -29,10 +29,12 @@ public:
     void updateReadPos(const char* end);
 
     const char * findCRLF() const;
+    const char * findDoubleCRLF() const;
 
     void clear();
 
     string retrieveAll();
+    string retrieve(size_t len);
     string retrieveUtil(const char * pos);
 
     const char* writePtr() const;

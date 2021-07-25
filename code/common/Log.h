@@ -15,21 +15,25 @@
 #include "./NoCopyable.h"
 
 enum LogLevel {
+    TRACE,
     DEBUG,
     INFO,
     WARN,
-    ERROR
+    ERROR,
+    FATAL,
+    OFF
 };
+
+extern int logLevel;
 
 class Log : NoCopyable{
 public:
     void init(LogLevel level, const char* path = "./log", 
                 const char* suffix =".log");
-
+    void setLogLevel(LogLevel level);
     static Log* getInstance();
-    // LogLevel getLevel();
-    // void setLevel(LogLevel level);
-    void logBase(const char * file, int line, LogLevel level, const char * format, ...);
+    LogLevel getLevel();
+    void logBase(const char * file, int line, LogLevel level, bool to_abort, const char * format, ...);
 private:
     Log();
     virtual ~Log();
@@ -68,12 +72,21 @@ private:
     std::mutex mtx_;
 };
 
-#define LOG_BASE(level, format, ...) \
-        Log::getInstance()->logBase(__FILE__, __LINE__, leve, format, ##__VA_ARGS__)
+#define LOG_BASE(level, to_abort, format, ...) (Log::getInstance()->logBase(__FILE__, __LINE__, level, to_abort, format, ##__VA_ARGS__))
 
-#define LOG_DEBUG(format, ...) LOG_BASE(DEBUG, format, ##__VA_ARGS__)
-#define LOG_INFO(format, ...) LOG_BASE(INFO, format, ##__VA_ARGS__)
-#define LOG_WARN(format, ...) LOG_BASE(WARN, format, ##__VA_ARGS__)
-#define LOG_ERROR(format, ...) LOG_BASE(ERROR, format, ##__VA_ARGS__)
+#define LOG_TRACE(format, ...) if(logLevel <= TRACE) \ 
+LOG_BASE(TRACE, false, format, ##__VA_ARGS__)
+
+#define LOG_DEBUG(format, ...) if(logLevel <= DEBUG) \ 
+LOG_BASE(DEBUG, false, format, ##__VA_ARGS__)
+
+#define LOG_INFO(format, ...) if(logLevel <= INFO) \ 
+LOG_BASE(INFO, false, format, ##__VA_ARGS__)
+
+#define LOG_WARN(format, ...) LOG_BASE(WARN, false, format, ##__VA_ARGS__)
+
+#define LOG_ERROR(format, ...) LOG_BASE(ERROR, false, format, ##__VA_ARGS__)
+
+#define LOG_FATAL(format, ...) LOG_BASE(FATAL, true, format, ##__VA_ARGS__)
 
 #endif //LOG_H

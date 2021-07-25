@@ -29,8 +29,9 @@ void Channel::handleEvents() {
     // extend it's life-time.
     if (tied_) {
         auto guard = tie_.lock();
-        if (guard != nullptr)
+        if (guard != nullptr) {
             __handleEventsWithGuard();
+        }
     }
     else {
         __handleEventsWithGuard();
@@ -61,6 +62,7 @@ void Channel::__handleEventsWithGuard() {
     handlingEvents_ = false;
 }
 
+// tie a Timer, Acceptor or TcpConnection
 void Channel::tie(const std::shared_ptr<void>& obj) {
     tie_ = obj;
     tied_ = true;

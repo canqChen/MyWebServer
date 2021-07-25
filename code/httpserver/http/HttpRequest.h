@@ -21,20 +21,21 @@ public:
         return URI_;
     }
 
-    HttpVersion getHttpVersion() const {
+    string getHttpVersion() const {
         return httpVersion_;
     }
 
-    HttpMethod getMethod() const {
+    string getRequestMethod() const {
         return requestMethod_;
     }
     
-    HttpVersion getHttpVersion() const {
+    string getHttpVersion() const {
         return httpVersion_;
     }
 
-    HttpStatusCode getStatusCode() const{
-        return statusCode_;
+    // for other conversion
+    string getRequestBody() const{
+        return requestBody_;
     }
 
     bool isKeepAlive() const;
@@ -42,17 +43,17 @@ public:
     string getParameter(const string & name) const;
     string getParameter(const char* name) const;
     string getContentType() const;
+    size_t getContentLength() const;
     string getCookie(const string &cookieName);
     string getCookie(const char *cookieName);
 
 private:
-    HttpMethod requestMethod_;
+    string requestMethod_;
     string URL_, URI_, requestBody_;
-    HttpVersion httpVersion_;
+    string httpVersion_;
     std::unordered_map<string, string> requestHeaders_;
     std::unordered_map<string, string> requestParameters_;
     std::unordered_map<string, string> cookies_;
-    HttpStatusCode statusCode_;
 };
 
 

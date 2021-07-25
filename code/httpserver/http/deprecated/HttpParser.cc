@@ -1,3 +1,4 @@
+#if 0
 #include <regex>
 #include "../utils/StringUtils.h"
 #include "./HttpParser.h"
@@ -5,27 +6,52 @@
 #include "../../common/Buffer.h"
 #include "../../common/Log.h"
 #include "../utils/URLEncodeUtil.h"
+#include "./HttpRequest.h"
 
 using std::smatch;
 using std::regex;
 
-// 解析http请求
-void HttpParser::__parseRequest(Buffer& buff, std::unique_ptr<HttpRequest>& req) {
+// parse http, return false if the message is incomplete or error
+bool HttpParser::__parseRequest(Buffer& buff, std::unique_ptr<HttpRequest>& req) {
     if(buff.readableBytes() <= 0) {
         return false;
     }
+    // incomplete message
+    if(buff.findDoubleCRLF() == nullptr) {
+        return false;
+    }
+    // for rollback
+    auto originBegin = buff.readPtr();
+    // FIXME: fix parse process
     // 有限状态机，解析http请求
     parseState_ = REQUEST_LINE;
     while(buff.readableBytes() > 0 && parseState_ != FINISH) {
         // 截取请求的一行
         const char* lineEnd = buff.findCRLF();
         string line;
+        // incomplete massage
         if(lineEnd == nullptr) {
-            // 读取剩余请求体部分
-            line = buff.retrieveAll();
-            // 应该与content-length字节数一致
-            assert(static_cast<int>(line.size()) \
-                == stoi(req->requestHeaders_[HeaderString::CONTENT_LENGTH]))
+            buff.updateReadPos(originBegin);
+            return false;
+        }
+        // end of the request line and header
+        else if(buff.findCRLF() == buff.readPtr()) {
+            buff.updateReadPos(lineEnd + 2);
+            size_t len = req.getContentLength();
+            // get request
+            if(len == 0) {
+                return true;
+            }
+            else {
+                // incomplete message
+                if(buff.readableBytes() < len) {
+                    buff.updateReadPos(originBegin);
+                    return false;
+                }
+                parseState_ = BODY;
+                line = buff.retrieve(len);
+                buff.updateReadPos(len);
+            }
         }
         else {
             // 非请求体
@@ -36,21 +62,21 @@ void HttpParser::__parseRequest(Buffer& buff, std::unique_ptr<HttpRequest>& req)
 
         // 状态机解析请求
         switch(parseState_) {
-        case REQUEST_LINE:  //  请求行
+        case REQUEST_LINE:  
+            //  请求行
             if(!__parseRequestLine(line, req)) {
-                return;
+                return false;
             }
             parseState_ = HEADER;
             break;
         case HEADER:       // 头部
             if(!__parseHeader(line, req)) {
-                parseState_ = BODY;
+                return false;
             }
             break;
         case BODY:          // 请求体
             if(!__parseBody(line, req)) {
-                req->statusCode_ = BadRequest400;
-                return;
+                return false;
             }
             parseState_ = FINISH;
             break;
@@ -58,6 +84,7 @@ void HttpParser::__parseRequest(Buffer& buff, std::unique_ptr<HttpRequest>& req)
     }
     LOG_DEBUG("[%s], [%s], [%s]", req->requestMethod_.c_str(), \ 
             req->requestURI_.c_str(), req->requestBody_.c_str());
+    return true;
 }
 
 bool HttpParser::__parseRequestLine(const string& line, std::unique_ptr<HttpRequest>& req) {
@@ -65,52 +92,48 @@ bool HttpParser::__parseRequestLine(const string& line, std::unique_ptr<HttpRequ
     smatch subMatch;
     if(regex_match(line, subMatch, pattern)) {
         string methodStr = subMatch[1];
-        if(supportedMethodMap_.count(methodStr) > 0) {
-            req->requestMethod_ = supportedMethodMap_.at(methodStr);
-        }
-        else { // 请求方法不支持
-            req->requestMethod_ = UNKNOWN;
-            req->statusCode_ = MethodNotAllow405;
-            return false;
-        }
-        req->URL_ = subMatch[2];
-        string verStr = subMatch[3];
-        if(supportedHttpVersion_.count(verStr)) {
-            req->httpVersion_ = supportedHttpVersion_.at(verStr);
+        if(HttpMethod::contain(methodStr)) {
+            req->requestMethod_ = methodStr;
         }
         else {
-            req->httpVersion_ = ErrorVersion;
-            req->statusCode_ = HttpVersionNotSupported505;
-            return false;
+            req->requestMethod_ = HttpMethod::UNKNOWN;
+        }
+        req->URL_ = subMatch[2];
+        __parseURL(req->URL_, req);
+        string verStr = subMatch[3];
+        if(HttpVersion::contain(verStr)) {
+            req->httpVersion_ = verStr;
+        }
+        else {
+            req->httpVersion_ = HttpVersion::ErrorVersion;
         }
         LOG_DEBUG("Method: %s, URL: %s, HttpVersion: %s", \
         methodStr.c_str(), req->URL_.c_str(), verStr.c_str());
         return true;
     }
     LOG_ERROR("RequestLine Error: %s", line.c_str());
-    req->statusCode_ = BadRequest400;    // 请求行解析失败，请求有误
     return false;
 }
 
 bool HttpParser::__parseHeader(const string& line, std::unique_ptr<HttpRequest>& req) {
-    regex patten("^([^:]*): ?(.*)$");  // opt: val
+    regex patten("^([^:]*): ?(.*)$");  // header: val
     smatch subMatch;
     if(regex_match(line, subMatch, patten)) {
         string lowerHeader = StringUtils::toLower(subMatch[1]);
-        if(lowerHeader == HeaderString::COOKIE) {
+        if(lowerHeader == StringUtils::toLower(HttpHeaderName::COOKIE)) {
             __parseCookie(subMatch[2], req);
         }
         else {
-            req->requestHeaders_[lowerHeader] = StringUtils::toLower(subMatch[2]);
+            req->requestHeaders_[lowerHeader] = StringUtils::trim(subMatch[2]);
         }
         LOG_DEBUG("header: %s, value: %s", subMatch[1].c_str(), subMatch[2].c_str());
         return true;
     }
-    // 匹配失败，遇到空行，状态到解parsebody
     return false;
 }
 
 bool HttpParser::__parseBody(const string& line, std::unique_ptr<HttpRequest>& req) {
+    // record requestbody_
     requestBody_ = line;
     LOG_DEBUG("Body:%s, len:%d", line.c_str(), line.size());
     // 解析post请求体
@@ -121,32 +144,30 @@ bool HttpParser::__parseBody(const string& line, std::unique_ptr<HttpRequest>& r
 }
 
 void HttpParser::__parseURL(string & url, std::unique_ptr<HttpRequest>& req) {
-    if(requestMethod_ == HttpMethod::GET) {
-        auto decodedUrl = URLEncodeUtils::decode(url);
-        regex pattern("^http://([^/]+)/?([^?]*)\\??([^ ]*)");
-        smatch subMatch;
-        // full url
-        if(regex_match(decodedUrl, subMatch, pattern)) {
-            string uri = subMatch[2];
-            if(uri.empty()) {
-                req->URI_ = "/";
-            }
-            else {
-                req->URI_ = uri;
-            }
-            string params = subMatch[3];
-            if(!params.empty()) {
-                __parseParams(params, req);
-            }
-        } 
-        else {  // relative url
-            auto sep = url.find_first_of('?');
-            req->URI_ = url.substr(0, sep);
-            // 带参数
-            if(sep != string::npos) {
-                string params = url.substr(sep + 1);
-                __parseParams(params, req);
-            }
+    auto decodedUrl = URLEncodeUtils::decode(url);
+    regex pattern("^http://([^/]+)/?([^?]*)\\??([^ ]*)");
+    smatch subMatch;
+    // full url
+    if(regex_match(decodedUrl, subMatch, pattern)) {
+        string uri = subMatch[2];
+        if(uri.empty()) {
+            req->URI_ = "/";
+        }
+        else {
+            req->URI_ = uri;
+        }
+        string params = subMatch[3];
+        if(!params.empty()) {
+            __parseParams(params, req);
+        }
+    }
+    else {  // relative url
+        auto sep = url.find_first_of('?');
+        req->URI_ = url.substr(0, sep);
+        // 带参数
+        if(sep != string::npos) {
+            string params = url.substr(sep + 1);
+            __parseParams(params, req);
         }
     }
 }
@@ -177,17 +198,18 @@ void HttpParser::__parseParams(string & params, std::unique_ptr<HttpRequest>& re
 }
 
 void HttpParser::__parsePostBody(const string & body, std::unique_ptr<HttpRequest>& req) {
-    // 解析表单数据
-    string contentType = req->requestHeaders_[HeaderString::CONTENT_TYPE];
-    if(contentType == MIME::WWW_FORM_URLENCODED) {
-        // post body中编码与url不一样
+    string contentType = req->requestHeaders_[HttpHeaderName::CONTENT_TYPE];
+    
+    // parse www-form-urlencoded data
+    if(StringUtils::isStartWith(contentType, MIME::WWW_FORM_URLENCODED)) {
         string params = URLEncodeUtils::decode(body, false);
         __parseParams(params, req);
     }
-    else if(StringUtils::startWith(contentType, MIME::JSON)) {
-        // TODO: 解析json
+    else if(StringUtils::isStartWith(contentType, MIME::JSON)) {
+        // TODO: parse json
     }
-    else if(StringUtils::startWith(contentType, MIME::MULTIPART_FORM_DATA)) {
-        // TODO: 解析multipart/form-data
+    else if(StringUtils::isStartWith(contentType, MIME::MULTIPART_FORM_DATA)) {
+        // TODO: parse multipart/form-data
     }
 }
+#endif

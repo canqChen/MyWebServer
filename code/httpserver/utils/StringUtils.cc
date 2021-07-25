@@ -1,6 +1,9 @@
-# include "StringUtils.h"
+#include<regex> 
+#include "StringUtils.h"
 
-bool StringUtils::isEmpty(const string &str) {
+
+bool StringUtils::isEmpty(const string &str) 
+{
     if(str.empty())
         return true;
     string whiteSpaces(" \t\f\v\n\r");
@@ -12,7 +15,8 @@ bool StringUtils::isEmpty(const string &str) {
 }
 
 // 去除字符串两边空格
-string StringUtils::trim(const string & str) {
+string StringUtils::trim(const string & str) 
+{
     string whiteSpaces(" \t\f\v\n\r");
     auto startIdx = str.find_first_not_of(whiteSpaces);
     auto endIdx = str.find_last_not_of(whiteSpaces);
@@ -23,7 +27,8 @@ string StringUtils::trim(const string & str) {
 }
 
 // 拼接字符串，以delimiter为分界
-string StringUtils::joinString(const vector<string> & strVec, string delimiter="") {
+string StringUtils::joinString(const vector<string> & strVec, string_view delimiter) 
+{
     string ret;
     int len = strVec.size();
     for(int i = 0; i < len; ++i) {
@@ -34,7 +39,8 @@ string StringUtils::joinString(const vector<string> & strVec, string delimiter="
     return ret;
 }
 
-vector<string> StringUtils::split(const string & str, string delimiter) {
+vector<string> StringUtils::split(const string & str, string_view delimiter) 
+{
     if(delimiter == "")
         return {str};
     vector<string> ret;
@@ -50,21 +56,24 @@ vector<string> StringUtils::split(const string & str, string delimiter) {
     return ret;
 }
 
-unsigned char StringUtils::toLower(unsigned char ch) {
+unsigned char StringUtils::toLower(const unsigned char ch) 
+{
     if(ch >= 'A' && ch <= 'Z') {
         return ch - 'A' + 'a';
     }
     return ch;
 }
 
-unsigned char StringUtils::toUpper(unsigned char ch) {
+unsigned char StringUtils::toUpper(const unsigned char ch) 
+{
     if(ch >= 'a' && ch <= 'z') {
         return ch - 'a' + 'A';
     }
     return ch;
 }
 
-string StringUtils::toLower(const string & str) {
+string StringUtils::toLower(const string & str) 
+{
     string ret;
     for(auto &ch : str) {
         ret.push_back(toLower(ch));
@@ -72,10 +81,47 @@ string StringUtils::toLower(const string & str) {
     return ret;
 }
 
-string StringUtils::toUpper(const string & str) {
+string StringUtils::toUpper(const string & str) 
+{
     string ret;
     for(auto &ch : str) {
         ret.push_back(toUpper(ch));
     }
     return ret;
+}
+
+bool StringUtils::isStartWith(string_view str, string_view pattern) 
+{
+    string s(str);
+    string ps = "^" + string(pattern) + ".*";
+    std::regex p(ps);
+    std::smatch sm;
+    if(std::regex_match(s, sm, p)) {
+        return true;
+    }
+    return false;
+}
+
+bool StringUtils::isEndWith(string_view str, string_view pattern) 
+{
+    string s(str);
+    string ps = ".*" + string(pattern) + "$";
+    std::regex p(ps);
+    std::smatch sm;
+    if(std::regex_match(s, sm, p)) {
+        return true;
+    }
+    return false;
+}
+
+bool StringUtils::equalIgnoreCases(string_view str1, string_view str2) {
+    if(str1.size() != str2.size()) {
+        return false;
+    }
+    for(int i = 0; i < str1.size(); ++i) {
+        if(toLower(str1[i]) != toLower(str2[i])) {
+            return false;
+        }
+    }
+    return true;
 }

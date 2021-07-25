@@ -16,14 +16,20 @@ class Buffer;
 class TcpConnection;
 class InetAddress;
 
+// tcpconnection callback definition
 typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
 typedef std::function<void(const TcpConnectionPtr&)> CloseCallback;
 typedef std::function<void(const TcpConnectionPtr&)> ConnectionCallback;
 typedef std::function<void(const TcpConnectionPtr&)> WriteCompleteCallback;
 typedef std::function<void(const TcpConnectionPtr&, size_t)> HighWaterMarkCallback;
-typedef std::function<void(const TcpConnectionPtr&, Buffer&)> MessageCallback;
+typedef std::function<void(TcpConnectionPtr&, Buffer&)> MessageCallback;
 
+// channel callback definition
 typedef std::function<void()> ErrorCallback;
+typedef std::function<void()> ReadCallback;
+typedef std::function<void()> WriteCallback;
+typedef std::function<void()> CloseCallback;
+
 typedef std::function<void(int sockfd,
                            const InetAddress& local,
                            const InetAddress& peer)> NewConnectionCallback;

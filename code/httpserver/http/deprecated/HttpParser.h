@@ -1,22 +1,26 @@
+#if 0
+
 #ifndef HTTPPARSER_H
 #define HTTPPARSER_H
 
 #include <string>
 #include <memory>
-#include "./HttpRequest.h"
+
+#include "../../common/NoCopyable.h"
 
 using std::string;
 class Buffer;
+class HttpRequest;
 
 class HttpParser : NoCopyable {
 public:
-    static void parse(Buffer & buff, std::unique_ptr<HttpRequest>& req) {
+    static bool parse(Buffer & buff, std::unique_ptr<HttpRequest>& req) {
         PARSE_STATE = REQUEST_LINE;
         __parseRequest(buff, req);
     }
 private:
     static PARSE_STATE parseState_;
-    static void __parseRequest(Buffer& buff, std::unique_ptr<HttpRequest>& req);
+    static bool __parseRequest(Buffer& buff, std::unique_ptr<HttpRequest>& req);
     static bool __parseRequestLine(const string& line, std::unique_ptr<HttpRequest>& req);
     static bool __parseHeader(const string& line, std::unique_ptr<HttpRequest>& req);
     static bool __parseBody(const string& line, std::unique_ptr<HttpRequest>& req);
@@ -39,5 +43,7 @@ private:
         FINISH,
     };
 };
+
+#endif
 
 #endif

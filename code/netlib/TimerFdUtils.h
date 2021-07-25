@@ -13,8 +13,7 @@ struct TimerFdUtils {
         // TFD_NONBLOCK 非阻塞io
         int fd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
         if (fd == -1) {
-            LOG_ERROR("Fail in %s", "timer_create()");
-            exit(1);
+            LOG_FATAL("Fail in %s", "timer_create()");
         }
         return fd;
     }
@@ -23,8 +22,7 @@ struct TimerFdUtils {
         uint64_t val;
         ssize_t n = read(fd, &val, sizeof(val));
         if (n != sizeof(val)) {
-            LOG_ERROR("timerfdRead get %ld, not %lu", n, sizeof(val));
-            exit(1);
+            LOG_FATAL("timerfdRead get %ld, not %lu", n, sizeof(val));
         }
             
     }

@@ -20,24 +20,23 @@ Log::~Log()
     fclose(fp_);
 }
 
-// LogLevel Log::getLevel()
-// {
-//     // 运行过程更改日志级别需要加锁
-//     lock_guard<mutex> locker(mtx_);
-//     return level_;
-// }
+LogLevel Log::getLevel()
+{
+    // 运行过程更改日志级别需要加锁
+    lock_guard<mutex> locker(mtx_);
+    return level_;
+}
 
-// void Log::setLevel(int level)
-// {
-//     lock_guard<mutex> locker(mtx_);
-//     level_ = level;
-// }
+void Log::setLevel(int level)
+{
+    lock_guard<mutex> locker(mtx_);
+    level_ = level;
+}
 
 void Log::init(LogLevel level = INFO, const char *path, const char *suffix) {
     level_ = level;
 
-    if (!blockQueue_)
-    {
+    if (!blockQueue_) {
         unique_ptr<BlockQueue<std::string> > newQueue(new BlockQueue<std::string>);
         blockQueue_ = std::move(newQueue);
 
@@ -135,14 +134,18 @@ struct tm {
 };
 #endif
 
-void Log::logBase(const char * file, int line, LogLevel level, const char *format, ...)
+void Log::logBase(const char * file, int line, LogLevel level, bool to_abort, const char *format, ...)
 {
-    if (__isFileOpen() && int(getLevel()) <= int(level)) {
+    if (__isFileOpen() && int(level_) <= int(level)) {
         va_lsit vaList;
         va_start(vaList, format);
         __write(file, line, level, format, vaList);
         va_end(vaList);
         __flush();
+        if(to_abort) {
+            __flushAll();
+            abort();
+        }
     }
 }
 
@@ -190,20 +193,24 @@ void Log::__appendLogLevelTitle(LogLevel level, Buffer & buff)
 {
     switch (level)
     {
+    case TRACE:
+        buff.append("[trace]: ", 9);
+        break;
     case DEBUG:
         buff.append("[debug]: ", 9);
         break;
-    case INFO:
-        buff.append("[info] : ", 9);
-        break;
     case WARN:
-        buff.append("[warn] : ", 9);
+        buff.append("[warn]: ", 8);
         break;
     case ERROR:
         buff.append("[error]: ", 9);
         break;
+    case FATAL:
+        buff.append("[fatal]: ", 9);
+        break;
+    case INFO:
     default:
-        buff.append("[info] : ", 9);
+        buff.append("[info]: ", 8);
         break;
     }
 }

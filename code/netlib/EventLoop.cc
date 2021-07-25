@@ -28,15 +28,14 @@ public:
 IgnoreSigPipe ignore;
 
 EventLoop::EventLoop()
-        : tid_(gettid()),
-          quit_(false),
-          doingPendingTasks_(false),
-          poller_(this),
+        : tid_(gettid()), quit_(false),
+          doingPendingTasks_(false), poller_(this),
           wakeupFd_(::eventfd(0, EFD_CLOEXEC | EFD_NONBLOCK)),
           wakeupChannel_(this, wakeupFd_),
-          timerQueue_(this) {
+          timerQueue_(this) 
+{
     if (wakeupFd_ == -1)
-        SYSFATAL("EventLoop::eventfd()");
+        LOG_FATAL("EventLoop::eventfd() create fail");
 
     wakeupChannel_.setReadCallback([this](){__handleWakeUpFdRead();});
     wakeupChannel_.enableRead();
@@ -45,26 +44,31 @@ EventLoop::EventLoop()
     t_Eventloop = this;
 }
 
-EventLoop::~EventLoop() {
+EventLoop::~EventLoop() 
+{
     assert(t_Eventloop == this);
     t_Eventloop = nullptr;
 }
 
-void EventLoop::loop() {
+void EventLoop::loop() 
+{
     assertInLoopThread();
     LOG_DEBUG("EventLoop %p polling", this);
     quit_ = false;
     while (!quit_) {
         activeChannels_.clear();
         poller_.poll(activeChannels_);
-        for (auto channel: activeChannels_)
+        for (auto channel: activeChannels_) {
             channel->handleEvents();
+        }
+        // deal tasks call from other thread
         __doPendingTasks();
     }
     LOG_DEBUG("EventLoop %p quit", this);
 }
 
-void EventLoop::quit() {
+void EventLoop::quit() 
+{
     assert(!quit_);
     quit_ = true;
     if (!isInLoopThread()) {
@@ -72,21 +76,29 @@ void EventLoop::quit() {
     }
 }
 
-void EventLoop::runInLoop(const Task& task) {
-    if (isInLoopThread())
+void EventLoop::runInLoop(const Task& task) 
+{
+    if (isInLoopThread()) {
         task();
-    else
+    }
+    else {
         queueInLoop(task);
+    }
 }
 
-void EventLoop::runInLoop(Task&& task) {
-    if (isInLoopThread())
+// run task immediately if in thread or enqueue if in other thread
+void EventLoop::runInLoop(Task&& task) 
+{
+    if (isInLoopThread()) {
         task();
-    else
+    }
+    else {
         queueInLoop(std::move(task));
+    }
 }
 
-void EventLoop::queueInLoop(const Task& task) {
+void EventLoop::queueInLoop(const Task& task) 
+{
     {
         std::lock_guard<std::mutex> guard(mutex_);
         pendingTasks_.push_back(task);
@@ -95,11 +107,13 @@ void EventLoop::queueInLoop(const Task& task) {
     // if we are in loop thread && doing pending task, wake up too.
     // note that the following code has race condition:
     //     if (doingPendingTasks_ || isInLoopThread())
-    if (!isInLoopThread() || doingPendingTasks_)
+    if (!isInLoopThread() || doingPendingTasks_) {
         wakeup();
+    }
 }
 
-void EventLoop::queueInLoop(Task&& task) {
+void EventLoop::queueInLoop(Task&& task) 
+{
     {
         std::lock_guard<std::mutex> guard(mutex_);
         pendingTasks_.push_back(std::move(task));
@@ -108,75 +122,88 @@ void EventLoop::queueInLoop(Task&& task) {
         wakeup();
 }
 
-Timer* EventLoop::runAt(Timestamp when, TimerCallback callback) {
+Timer* EventLoop::runAt(Timestamp when, TimerCallback callback) 
+{
     return timerQueue_.addTimer(std::move(callback), when, Millisecond::zero());
 }
 
-Timer* EventLoop::runAfter(Nanosecond interval, TimerCallback callback) {
+Timer* EventLoop::runAfter(Nanosecond interval, TimerCallback callback) 
+{
     return runAt(clock::now() + interval, std::move(callback));
 }
 
-Timer* EventLoop::runEvery(Nanosecond interval, TimerCallback callback) {
+Timer* EventLoop::runEvery(Nanosecond interval, TimerCallback callback) 
+{
     return timerQueue_.addTimer(std::move(callback),
                                 clock::now() + interval,
                                 interval);
 }
 
-void EventLoop::cancelTimer(Timer* timer) {
+void EventLoop::cancelTimer(Timer* timer) 
+{
     timerQueue_.cancelTimer(timer);
 }
 
-void EventLoop::wakeup() {
+void EventLoop::wakeup() 
+{
     uint64_t one = 1;
     ssize_t n = ::write(wakeupFd_, &one, sizeof(one));
     if (n != sizeof(one)){
-        LOG_ERROR("EventLoop::wakeup() should ::write() %lu bytes", sizeof(one));
-        exit(1);
+        LOG_FATAL("EventLoop::wakeup() should ::write() %lu bytes", sizeof(one));
     }
 }
 
-void EventLoop::updateChannel(Channel* channel) {
+void EventLoop::updateChannel(Channel* channel) 
+{
     assertInLoopThread();
     poller_.updateChannel(channel);
 }
 
-void EventLoop::removeChannel(Channel* channel) {
+void EventLoop::removeChannel(Channel* channel) 
+{
     assertInLoopThread();
     channel->disableAll();
 }
 
-void EventLoop::assertInLoopThread() {
+void EventLoop::assertInLoopThread() 
+{
     assert(isInLoopThread());
 }
 
-void EventLoop::assertNotInLoopThread() {
+void EventLoop::assertNotInLoopThread() 
+{
     assert(!isInLoopThread());
 }
 
-bool EventLoop::isInLoopThread() {
+bool EventLoop::isInLoopThread() 
+{
     // tid_ is constant, don't worry about thread safety
     return tid_ == gettid();
 }
 
-void EventLoop::__doPendingTasks() {
+void EventLoop::__doPendingTasks() 
+{
     assertInLoopThread();
     std::vector<Task> tasks;
+
     {
         // shorten the critical area by a single swap
         std::lock_guard<std::mutex> guard(mutex_);
         tasks.swap(pendingTasks_);
     }
+
     doingPendingTasks_ = true;
-    for (Task& task: tasks)
+    for (Task& task: tasks) {
         task();
+    }
     doingPendingTasks_ = false;
 }
 
-void EventLoop::__handleWakeUpFdRead() {
+void EventLoop::__handleWakeUpFdRead() 
+{
     uint64_t one;
     ssize_t n = ::read(wakeupFd_, &one, sizeof(one));
     if (n != sizeof(one)) {
-        LOG_ERROR("EventLoop::__handleWakeUpFdRead() should ::read() %lu bytes", sizeof(one));
-        exit(1);
+        LOG_FATAL("EventLoop::__handleWakeUpFdRead() should ::read() %lu bytes", sizeof(one));
     }
 }

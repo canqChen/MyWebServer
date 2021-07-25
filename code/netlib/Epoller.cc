@@ -13,8 +13,7 @@ Epoller::Epoller(EventLoop* loop)
          events_(1024),
          epollfd_(::epoll_create1(EPOLL_CLOEXEC)) {
     if (epollfd_ == -1) {
-        LOG_ERROR("Fail in %s", "Epoller::epoll_create1");
-        exit(1);
+        LOG_FATAL("Create epoll fail in %s", "Epoller::epoll_create1");
     }
 }
 
@@ -67,7 +66,6 @@ void Epoller::__updateChannel(int op, Channel* channel) {
     ee.data.ptr = channel;
     int ret = ::epoll_ctl(epollfd_, op, channel->getFd(), &ee);
     if (ret == -1) {
-        LOG_ERROR("Fail in %s", "Epoller::__updateChannel");
-        sexit(1);
+        LOG_FATAL("epoll_ctl fail in Epoller::__updateChannel, op: %d", op);
     }
 }

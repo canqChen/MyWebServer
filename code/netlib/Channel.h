@@ -6,17 +6,13 @@
 #include <sys/epoll.h>
 
 #include "../common/NoCopyable.h"
+#include "./Callbacks.h"
 
 class EventLoop;
 
 // 每个channel对象只属于一个evenloop，且只负责一个fd的io事件分发给不同的回调，管理fd，不拥有fd，fd生命周期与channel无关
 class Channel: NoCopyable {
 public:
-    typedef std::function<void()> ReadCallback;
-    typedef std::function<void()> WriteCallback;
-    typedef std::function<void()> CloseCallback;
-    typedef std::function<void()> ErrorCallback;
-
     Channel(EventLoop* loop, int fd);
     ~Channel();
     // 注册可读回调
@@ -91,7 +87,7 @@ public:
     }
     // 是否正在监听可写事件
     bool isWriting() const { 
-        return events_ & EPOLLOUT; 
+        return events_ & EPOLLOUT;
     }
     // 是否正在被监听
     bool isPooling() const {
