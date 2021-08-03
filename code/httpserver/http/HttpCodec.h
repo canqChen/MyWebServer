@@ -8,20 +8,21 @@
 class HttpCodec: NoCopyable
 {
 public:
-    HttpCodec(): parseState_(REQUEST_LINE);
-    std::unique_ptr<HttpRequest> parseHttp(Buffer & buff);
-    string wrapHttp(const std::unique_ptr<HttpResponse> & resp);
+    HttpCodec(): parseState_(REQUEST_LINE){};
     ~HttpCodec() = default;
+
+    HttpRequestPtr parseHttp(Buffer & buff);
+    void wrapHttp(const HttpResponsePtr& resp, Buffer & buff);
 private:
     // parse http
-    bool __parseRequest(Buffer& buff, std::unique_ptr<HttpRequest>& req);
-    bool __parseRequestLine(const string& line, std::unique_ptr<HttpRequest>& req);
-    bool __parseHeader(const string& line, std::unique_ptr<HttpRequest>& req);
-    bool __parseBody(const string& line, std::unique_ptr<HttpRequest>& req);
-    void __parseURL(string & url, std::unique_ptr<HttpRequest>& req);
-    void __parsePostBody(const string & body, std::unique_ptr<HttpRequest>& req);
-    void __parseParams(string & params, std::unique_ptr<HttpRequest>& req);
-    void __parseCookie(string & cookies, std::unique_ptr<HttpRequest>& req);
+    bool __parseRequest(Buffer& buff, HttpRequestPtr& req);
+    bool __parseRequestLine(const string& line, HttpRequestPtr& req);
+    bool __parseHeader(const string& line, HttpRequestPtr& req);
+    bool __parseBody(const string& line, HttpRequestPtr& req);
+    void __parseURL(string & url, HttpRequestPtr& req);
+    void __parsePostBody(const string & body, HttpRequestPtr& req);
+    void __parseParams(string & params, HttpRequestPtr& req);
+    void __parseCookie(string & cookies, HttpRequestPtr& req);
 
     /* 
     TODO:
@@ -29,6 +30,11 @@ private:
     void parseJson() {}
     */
 
+    // wrapHttp
+    void __setStatusLine(const HttpResponsePtr& resp, Buffer & buff);
+    void __setHeaders(const HttpResponsePtr& resp, Buffer & buff);
+    void __setBody(const HttpResponsePtr& resp, Buffer & buff);
+    void __setErrorBody(const HttpResponsePtr& resp, Buffer& buff, string_view message);
 private:
     enum ParseState {
         REQUEST_LINE,
@@ -37,7 +43,10 @@ private:
         FINISH,
     };
     ParseState parseState_;
-
+    std::string contextPath_;
+    static std::unordered_map<string, std::pair<char *, struct stat> > cache_; // munmap(ptr, size);
 };
+
+std::unordered_map<string, std::pair<char *, struct stat> > HttpCodec::cache_;
 
 #endif

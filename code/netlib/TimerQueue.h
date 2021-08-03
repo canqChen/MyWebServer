@@ -19,6 +19,7 @@ public:
     void cancelTimer(Timer* timer);
 
 private:
+    typedef std::unique_ptr<Timer> TimerPtr;
     typedef std::pair<Timestamp, Timer*> Entry;
     typedef std::set<Entry> TimerList;
 
@@ -29,7 +30,7 @@ private:
     EventLoop* loop_;   // 定时器队列所属loop
     const int timerfd_; // 定时器fd
     Channel timerChannel_;  // 定时器fd对应channel
-    TimerList timers_;
+    TimerList timerSet_;
 };
 
 #endif //TIMERQUEUE_H

@@ -19,10 +19,10 @@ InetAddress::InetAddress(uint16_t port, bool loopback) {
     addr_.sin_port = htons(port);
 }
 
-InetAddress::InetAddress(const std::string& ip, uint16_t port) {
+InetAddress::InetAddress(std::string_view ip, uint16_t port) {
     bzero(&addr_, sizeof(addr_));
     addr_.sin_family = AF_INET;
-    int ret = ::inet_pton(AF_INET, ip.c_str(), &addr_.sin_addr.s_addr);
+    int ret = ::inet_pton(AF_INET, ip.data(), &addr_.sin_addr.s_addr);
     if (ret != 1) {
         LOG_FATAL("InetAddress::inet_pton()");
     }

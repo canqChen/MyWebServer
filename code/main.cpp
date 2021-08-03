@@ -1,7 +1,6 @@
 #include <unistd.h>
 #include "./httpserver/HttpServer.h"
-
-
+#include "./httpserver/Config.h"
 
 int logLevel;
 
@@ -16,8 +15,8 @@ int main() {
     //daemon(1, 0); 
 
     Log::getInstance()->init(logLevel);
-    InetAddress local(1314);
-    HttpServer server(local, 3, 3);
+    InetAddress local(Config::SERVERK_PORT);
+    HttpServer server(local, Config::LOOPS, Config::WORKERS);
     server.start();
 
     return 0;

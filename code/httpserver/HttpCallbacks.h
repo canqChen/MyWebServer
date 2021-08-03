@@ -18,9 +18,15 @@ class HttpRequest;
 class HttpResponse;
 class Buffer;
 
+typedef std::unique_ptr<HttpRequest> HttpRequestPtr;
+typedef std::unique_ptr<HttpResponse> HttpResponsePtr;
+
 // handler callback definition
-typedef std::function<void(const std::unique_ptr<HttpRequest>&, 
-        std::unique_ptr<HttpResponse> &)> HandlerCallBack;
+typedef std::function<void(const HttpRequestPtr&, 
+        HttpResponsePtr &)> HandlerCallBack;
+
+typedef std::function<bool(const HttpRequestPtr&, 
+        HttpResponsePtr &)> InterceptorCallBack;
 
 typedef std::function<void(TcpConnectionPtr&, Buffer&)> MessageCallback;
 

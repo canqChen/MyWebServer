@@ -11,17 +11,18 @@ using std::string_view;
 
 class StringUtils {
 public:
-    static bool isEmpty(const string &str);
-    static string trim(const string & str);
+    static bool isEmpty(string_view str);
+    static string trim(string_view str);
     static string joinString(const vector<string> & strVec, string_view delimiter);
-    static vector<string> split(const string & str, string_view delimiter);
-    static string toLower(const string & str);
-    static string toUpper(const string & str);
+    static vector<string> split(string_view str, string_view delimiter);
+    static string toLower(string_view str);
+    static string toUpper(string_view str);
     static unsigned char toLower(const unsigned char ch);
     static unsigned char toUpper(const unsigned char ch);
     static bool isStartWith(string_view str, string_view pattern);
     static bool isEndWith(string_view str, string_view pattern);
     static bool equalIgnoreCases(string_view str1, string_view str2);
+    static string getSuffix(string_view filename);
 };
 
 #endif

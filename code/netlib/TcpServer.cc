@@ -41,7 +41,7 @@ void TcpServer::__handleCloseConnection(const TcpConnectionPtr& conn)
 {
     loop_->assertInLoopThread();
     size_t ret = connections_.erase(conn);
-    assert(ret == 1);(void)ret;
+    assert(ret == 1);
     // log info
     connectionCallback_(conn);
 }

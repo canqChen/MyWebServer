@@ -19,20 +19,24 @@ public:
     {
     }
 
-    void run() { 
+    void run() 
+    { 
         if (callback_) 
             callback_(); 
     }
 
-    bool repeat() const { 
+    bool isRepeat() const 
+    { 
         return repeat_; 
     }
 
-    bool expired(Timestamp & now) const { 
+    bool isExpired(Timestamp & now) const 
+    { 
         return now >= when_; 
     }
 
-    Timestamp when() const { 
+    Timestamp when() const 
+    { 
         return when_; 
     }
 

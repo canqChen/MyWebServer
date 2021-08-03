@@ -24,8 +24,6 @@ public:
         newConnectionCallback_ = cb; 
     }
 
-    static int createSocket();
-
 private:
     void __handleAcceptable();
 

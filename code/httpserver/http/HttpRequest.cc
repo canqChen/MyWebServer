@@ -16,7 +16,7 @@ bool HttpRequest::isKeepAlive() const {
     return false;
 }
 
-string HttpRequest::getHeader(const string & header) const {
+string HttpRequest::getHeader(string_view header) const {
     string tmpHeader = StringUtils::toLower(header);
     if(requestHeaders_.count(tmpHeader)) {
         return requestHeaders_.at(tmpHeader);
@@ -32,7 +32,7 @@ size_t HttpRequest::getContentLength() const {
     return static_cast<size_t>(len);
 }
 
-string HttpRequest::getParameter(const string & name) const {
+string HttpRequest::getParameter(string_view name) const {
     assert(!name.empty());
     string head = StringUtils::toLower(name);
     if(requestParameters_.find(head) != requestHeaders_.end()) {
@@ -41,11 +41,6 @@ string HttpRequest::getParameter(const string & name) const {
     return "";
 }
 
-string HttpRequest::getParameter(const char* name) const {
-    assert(name != nullptr);
-    string key(name);
-    return getParameter(key);
-}
 
 string HttpRequest::getContentType() const {
     string head = StringUtils::toLower(HttpHeaderName::CONTENT_TYPE);
@@ -55,17 +50,12 @@ string HttpRequest::getContentType() const {
     return "";
 }
 
-string HttpRequest::getCookie(const string &cookieName) {
+Cookie HttpRequest::getCookieByName(string_view cookieName) {
     assert(!cookieName.empty());
-    if(cookies_.count(cookieName) > 0) {
-        return cookies_[cookieName];
+    string name = string(cookieName);
+    if(cookies_.count(name) > 0) {
+        return cookies_[name];
     }
-    return "";
-}
-
-string HttpRequest::getCookie(const char *cookieName) {
-    assert(cookieName != nullptr);
-    string name(cookieName);
-    return getCookie(name);
+    return Cookie();
 }
 

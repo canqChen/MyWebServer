@@ -8,7 +8,7 @@ class InetAddress {
 public:
     explicit
     InetAddress(uint16_t port, bool loopback = false);
-    InetAddress(const std::string& ip, uint16_t port);
+    InetAddress(std::string_view ip, uint16_t port);
 
     void setAddress(const struct sockaddr_in& addr) { 
         addr_ = addr; 

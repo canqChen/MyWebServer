@@ -1,105 +1,135 @@
 #include "Buffer.h"
 
-Buffer::Buffer(int initBuffSize = 1024) : buff_(initBuffSize), readIdx_(0), writeIdx_(0) {}
+Buffer::Buffer(size_t initBuffSize = 1024, size_t headerSize = 8) 
+    : buff_(initBuffSize + headerSize), headerSize_(headerSize), 
+      readIdx_(headerSize_), writeIdx_(headerSize_) 
+{
+    assert(initBuffSize > 0 && headerSize_ > 0)
+}
 
 // __buffer中可被读出字节数
-size_t Buffer::readableBytes() const {
+size_t Buffer::readableBytes() const 
+{
     return writeIdx_ - readIdx_;
 }
 
 // buffer中剩余可写入字节数
-size_t Buffer::writableBytes() const {
+size_t Buffer::writableBytes() const 
+{
     return buff_.capacity() - writeIdx_;
 }
 
 // 返回buffer可被读起始位置
-size_t Buffer::prependableBytes() const {
+size_t Buffer::prependableBytes() const 
+{
     return readIdx_;
 }
 
 // 返回可读出起始位置的指针
-const char* Buffer::readPtr() const {
+const char* Buffer::readPtr() const 
+{
     return __beginPtr() + readIdx_;
 }
 
 // 返回可写入起始位置
-const char* Buffer::writePtr() const {
+const char* Buffer::writePtr() const 
+{
     return __beginPtr() + writeIdx_;
 }
 
 // 返回可写入起始位置
-char* Buffer::writePtr() {
+char* Buffer::writePtr() 
+{
     return __beginPtr() + writeIdx_;
 }
 
 // 更新下次可读起始位置 readPos
-void Buffer::updateReadPos(size_t len) {
+void Buffer::updateReadPos(size_t len) 
+{
     assert(len <= readableBytes());
     readIdx_ += len;
 }
 
 // 更新已读光标至指定位置
-void Buffer::updateReadPos(const char* end) {
+void Buffer::updateReadPos(const char* end) 
+{
     assert(readPtr() <= end);
     updateReadPos(end - readPtr());
 }
 
 // 更新下次写入起始位置的光标
-void Buffer::updateWritePos(size_t len) {
+void Buffer::updateWritePos(size_t len) 
+{
     writeIdx_ += len;
 }
 
 // 清空缓冲区
-void Buffer::clear() {
+void Buffer::clear() 
+{
     bzero(&buff_[0], buff_.capacity());
-    readIdx_ = 0;
-    writeIdx_ = 0;
+    readIdx_ = headerSize_;
+    writeIdx_ = headerSize_;
 }
 
 // 保存buffer数据到string中
-string Buffer::retrieveAll() {
+string Buffer::retrieveAll() 
+{
     return retrieveUtil(readPtr() + readableBytes());
 }
 
-string Buffer::retrieve(size_t len) {
+string Buffer::retrieve(size_t len) 
+{
     return retrieveUtil(readPtr() + len);
 }
 
-string Buffer::retrieveUtil(const char * pos) {
+string Buffer::retrieveUtil(const char * pos) 
+{
     assert(pos >= readPtr());
     assert(pos <= writePtr());
     string ret = string(readPtr(), pos);
-    // updateReadPos(pos);
     return ret;
 }
 
-const char * Buffer::findCRLF() const {
+const char * Buffer::findCRLF() const 
+{
     auto CRLF = "\r\n";
     const char* pos = std::search(readPtr(), writePtr(), CRLF, CRLF + 2);
     return pos == writePtr() ? nullptr : pos;
 }
 
-const char * Buffer::findDoubleCRLF() const {
+const char * Buffer::findDoubleCRLF() const 
+{
     auto CRLF = "\r\n\r\n";
     const char* pos = std::search(readPtr(), writePtr(), CRLF, CRLF + 2);
     return pos == writePtr() ? nullptr : pos;
 }
 
-void Buffer::append(const string& str) {
+void Buffer::append(const string& str) 
+{
     append(str.data(), str.length());
 }
 
-void Buffer::append(const void* data, size_t len) {
+void Buffer::append(string&& str) 
+{
+    // string tmp(std::forward<string>(str));
+    append(str.data(), str.length());
+}
+
+void Buffer::append(const void* data, size_t len) 
+{
     assert(data!=nullptr);
     append(static_cast<const char*>(data), len);
 }
 
 // 写入buffer，并更新下次写入起始位置
-void Buffer::append(const char* str, size_t len) {
+void Buffer::append(const char* str, size_t len) 
+{
     assert(str);
-    __ensureWritable(len);
-    std::copy(str, str + len, writePtr());
-    updateWritePos(len);
+    if(len > 0) {
+        __ensureWritable(len);
+        std::copy(str, str + len, writePtr());
+        updateWritePos(len);
+    }
 }
 
 void Buffer::append(const Buffer& buff) {
@@ -107,7 +137,8 @@ void Buffer::append(const Buffer& buff) {
 }
 
 // 从socket fd读入__buffer
-ssize_t Buffer::readFd(int fd, int* saveErrno) {
+ssize_t Buffer::readFd(int fd, int* saveErrno) 
+{
     char buff[65535];       // 申请大空间，防止buff_容量不足
     struct iovec iov[2];   // 分两部分读
     const size_t writable = writableBytes();
@@ -131,7 +162,8 @@ ssize_t Buffer::readFd(int fd, int* saveErrno) {
     return len;
 }
 
-ssize_t Buffer::writeFd(int fd, int* saveErrno) {
+ssize_t Buffer::writeFd(int fd, int* saveErrno) 
+{
     size_t readSize = readableBytes();  // buffer中可被读出写至fd的字节数
     ssize_t len = write(fd, readPtr(), readSize);
     if(len < 0) {
@@ -142,15 +174,18 @@ ssize_t Buffer::writeFd(int fd, int* saveErrno) {
     return len;
 }
 
-char* Buffer::__beginPtr() {
+char* Buffer::__beginPtr() 
+{
     return &*buff_.begin();
 }
 
-const char* Buffer::__beginPtr() const {
+const char* Buffer::__beginPtr() const 
+{
     return &*buff_.begin();
 }
 
-void Buffer::__ensureWritable(size_t len) {
+void Buffer::__ensureWritable(size_t len) 
+{
     if(writableBytes() < len) {
         __makeSpace(len);
     }
@@ -158,19 +193,20 @@ void Buffer::__ensureWritable(size_t len) {
 }
 
 // 扩容或覆盖前面已读出数据
-void Buffer::__makeSpace(size_t len) {
+void Buffer::__makeSpace(size_t len) 
+{
     size_t prependable = prependableBytes();
     size_t writable = writableBytes();
     
     // 扩容otherMore个子节
-    if(len > prependable + writable) {
-        size_t otherMore = len - prependable - writable;
+    if(len + headerSize_ > prependable + writable) {
+        size_t otherMore = len + headerSize_ - prependable - writable;
         buff_.resize(buff_.capacity() + otherMore);
     }
     // 覆盖buffer前面已经读出的数据，数据前移
     size_t readable = readableBytes();
-    std::copy(__beginPtr() + readIdx_, __beginPtr() + writeIdx_, __beginPtr());
-    readIdx_ = 0;
+    std::copy(readPtr(), writePtr(), __beginPtr() + headerSize_);
+    readIdx_ = headerSize_;
     writeIdx_ = readIdx_ + readable;
     assert(readable == readableBytes());
 }

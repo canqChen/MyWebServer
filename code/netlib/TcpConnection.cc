@@ -34,6 +34,7 @@ void TcpConnection::connectEstablished()
 {
     assert(state_ == CONNECTING);
     state_ = CONNECTED;
+    // 延长tcpconnection的生命周期，防止在channel处理完事件前tcpconnection被释放
     channel_.tie(shared_from_this());
     channel_.enableRead();
 }
@@ -229,15 +230,18 @@ void TcpConnection::__handleWrite()
     }
     assert(outputBuffer_.readableBytes() > 0);
     assert(channel_.isWriting());
-    ssize_t n = ::write(sockfd_, outputBuffer_.peek(), outputBuffer_.readableBytes());
+    ssize_t n = ::write(sockfd_, outputBuffer_.readPtr(), outputBuffer_.readableBytes());
     if (n == -1) {
-        LOG_ERROR("TcpConnection::write()");
+        LOG_ERROR("TcpConnection::write() error");
     }
     else {
         outputBuffer_.updateReadPos(static_cast<size_t>(n));
         if (outputBuffer_.readableBytes() == 0) {
-            channel_.disableWrite();    // write complete, disable write event
-            // write complete, shutdown, send FIN
+            // write complete, disable to listen writable event, 
+            // otherwise writable event will be aroused even if 
+            // there are no data to send
+            channel_.disableWrite();
+            // write complete, and going to shutdown, send FIN
             if (state_ == DISCONNECTING)
                 __shutdownWRInLoop();
             if (writeCompleteCallback_) {
@@ -255,7 +259,7 @@ void TcpConnection::__handleClose()
            state_ == DISCONNECTING);
     state_ = DISCONNECTED;
     loop_->removeChannel(&channel_);
-    // callback, delete this tcpconnetion from tcpserver or tcp client
+    // callback, delete this tcpconnetion from tcp server or tcp client
     closeCallback_(shared_from_this());
 }
 

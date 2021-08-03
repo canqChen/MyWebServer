@@ -4,51 +4,35 @@
 #include "./EventLoop.h"
 #include "../common/Log.h"
 #include "./Acceptor.h"
+#include "./Socket.h"
 
-
-int Acceptor::createSocket() {
-    int ret = ::socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0);
-    if (ret == -1) {
-        LOG_FATAL("Create socket fail in %s", "Acceptor::createSocket() !");
-    }
-    return ret;
-}
 
 Acceptor::Acceptor(EventLoop* loop, const InetAddress& local, bool isLinger = false)
-        : listening_(false), loop_(loop), lisentFd_(createSocket()),
-          acceptChannel_(loop, lisentFd_), local_(local) {
-    int on = 1;
+        : listening_(false), loop_(loop), lisentFd_(Socket::createSocket()),
+          acceptChannel_(loop, lisentFd_), local_(local) 
+{
+
     // timewait端口重用
-    int ret = ::setsockopt(lisentFd_, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
-    if (ret == -1) {
-        LOG_FATAL("Acceptor::setsockopt() SO_REUSEADDR fail!");
-    }
+    Socket::setReuseAddr(lisentFd_);
+
     // SO_REUSEPORT支持多个进程或者线程绑定到同一端口进行监听
-    ret = ::setsockopt(lisentFd_, SOL_SOCKET, SO_REUSEPORT, &on, sizeof(on));
-    if (ret == -1) {
-        LOG_FATAL("Acceptor::setsockopt() SO_REUSEPORT fail!");
-    }
+    Socket::setReusePort(lisentFd_);
+
     // 设置是否优雅关闭
     // 优雅关闭: 直到所剩数据发送完毕或超时
-    struct linger optLinger = { 0 };
+
     if(isLinger) {
-        optLinger.l_onoff = 1;
-        optLinger.l_linger = 5; // 单位：s
+        Socket::setLinger(lisentFd_, 5);
     }
     
-    ret = setsockopt(listenFd_, SOL_SOCKET, SO_LINGER, &optLinger, sizeof(optLinger));
-    if(ret < 0) {
-        close(listenFd_);
-        LOG_FATAL("Set linger error!");
-        return false;
-    }
     ret = ::bind(lisentFd_, local.getSockaddr(), local.getSocklen());
     if (ret == -1) {
         LOG_FATAL("Acceptor::bind() fail!");
     }
 }
 
-void Acceptor::listen() {
+void Acceptor::listen() 
+{
     loop_->assertInLoopThread();
     int ret = ::listen(lisentFd_, SOMAXCONN);
     if (ret == -1) {

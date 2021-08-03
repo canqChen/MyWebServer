@@ -105,6 +105,7 @@ private:
     // 处理io事件底层封装函数
     void __handleEventsWithGuard();
 
+private:
     EventLoop* loop_;   // 所属eventloop
     int fd_;    // 所负责的fd
 

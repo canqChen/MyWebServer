@@ -2,30 +2,27 @@
 #define HANDLERDISPATCHER_H
 
 #include<string>
-#include<map>
+#include<unordered_map>
 #include<memory>
 
-#include "../handler/AbstractHandler.h"
+// #include "../handler/AbstractHandler.h"
 #include "../HttpCallbacks.h"
+#include "../handler/HandlerChain.h"
 
-
-class HandlerDispatcher
+using std::string_view;
+class HandlerDispatcher: NoCopyable
 {
 public:
-    static HandlerDispatcher* getInstance();
-
-    void register_(const std::string & uri, const std::string &method, HandlerCallBack && handler);
-    HandlerCallBack getHandler(const std::string & uri, const std::string &method);
-
-    HandlerDispatcher(const HandlerDispatcher&) = delete;
-    HandlerDispatcher(HandlerDispatcher&&) = delete;
-    HandlerDispatcher & operator = (const HandlerDispatcher&) = delete;
-    HandlerDispatcher & operator = (HandlerDispatcher&&) = delete;
+    // static HandlerDispatcher* getInstance();
+    HandlerDispatcher();
     ~HandlerDispatcher();
 
+    void registerHandlerCallback(string_view uri, string_view method, HandlerCallBack && handler);
+    void registerInterceptor(string_view uri, string_view method, InterceptorCallBack && interceptor);
+    HandlerCallBack getHandler(string_view uri, string_view method);
+    // InterceptorCallBack getInterceptor(const std::string & uri, const std::string &method);
 private:
-    HandlerDispatcher();
-    std::map<std::string, pair<std::string, HandlerCallBack> > handlers_;
+    std::unordered_map<std::pair<std::string, std::string>, HandlerChain> handlerChains_;
 };
 
 #endif

@@ -6,13 +6,16 @@
 #include <string>
 
 #include "./HttpUtils.h"
+#include "./Cookie.h"
 
 using std::string;
-class HttpParser;
+using std::string_view;
+class HttpCodec;
 
-class HttpRequest {
+class HttpRequest 
+{
 public:
-    friend class HttpParser;
+    friend class HttpCodec;
     HttpRequest();
 
     ~HttpRequest() = default;
@@ -39,21 +42,18 @@ public:
     }
 
     bool isKeepAlive() const;
-    string getHeader(const string & header) const;
-    string getParameter(const string & name) const;
-    string getParameter(const char* name) const;
+    string getHeader(string_view header) const;
+    string getParameter(string_view name) const;
     string getContentType() const;
     size_t getContentLength() const;
-    string getCookie(const string &cookieName);
-    string getCookie(const char *cookieName);
-
+    Cookie getCookieByName(string_view cookieName);
 private:
     string requestMethod_;
     string URL_, URI_, requestBody_;
     string httpVersion_;
     std::unordered_map<string, string> requestHeaders_;
     std::unordered_map<string, string> requestParameters_;
-    std::unordered_map<string, string> cookies_;
+    std::unordered_map<string, Cookie> cookies_;
 };
 
 

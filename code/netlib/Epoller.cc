@@ -53,7 +53,7 @@ void Epoller::updateChannel(Channel* channel) {
     else if (!channel->isNoneEvents()) {   // 监听事件非空，mod
         op = EPOLL_CTL_MOD;
     }
-    else {  // 监听事件空，删除
+    else {  // remove channel(fd)
         op = EPOLL_CTL_DEL;
         channel->setPooling(false);
     }

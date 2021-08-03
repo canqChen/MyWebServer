@@ -46,7 +46,7 @@ void Channel::__handleEventsWithGuard() {
             closeCallback_();
     }
     // 向已经断开的socket写或者读，会发生EPOLLERR，即表明已经断开，则关闭。属于服务器侧出错
-    if (revents_ & EPOLLERR) {  
+    if (revents_ & EPOLLERR) {
         if (errorCallback_) 
             errorCallback_();
     }

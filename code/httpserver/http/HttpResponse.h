@@ -1,52 +1,76 @@
 
-#ifndef HTTP_RESPONSE_H
-#define HTTP_RESPONSE_H
+#ifndef HTTPRESPONSE_H
+#define HTTPRESPONSE_H
 
-#include <unordered_map>
-#include <fcntl.h>       // open
-#include <unistd.h>      // close
-#include <sys/stat.h>    // stat
-#include <sys/mman.h>    // mmap, munmap
+#include <map>
 
-#include "../buffer/Buffer.h"
-#include "../log/Log.h"
+#include "../../common/Log.h"
+#include "./HttpUtils.h"
+#include "./Cookie.h"
+#include "../../common/Buffer.h"
 
-class HttpResponse {
+using std::string;
+using std::string_view;
+
+class HttpCodec;
+
+class HttpResponse : NoCopyable
+{
 public:
+    friend class HttpCodec;
     HttpResponse();
-    ~HttpResponse();
+    ~HttpResponse() = default;
 
-    void init(const std::string& srcDir, std::string& resourcePath, bool isKeepAlive = false, int code = -1);
-    void makeResponse(Buffer& buff);
-    void unmapFile();
-    char* getFile();
-    size_t fileSize() const;
-    void errorContent(Buffer& buff, std::string message);
-    int Code() const { return mCode; }
+    void sendError(string_view sc)
+    {
+        statusCode_ = sc;
+        fileName_ = HttpErrorHtml::getErrorHtmlByStatusCode(statusCode_);
+    }
 
-    void addStateLine(Buffer &buff);
-    void setHeader(Buffer &buff);
-    void addContent(Buffer &buff);
-    void setCookie(string name, string value);
-    void setContentType(String type);
+    void sendRedirect(string_view url)
+    {
+        statusCode_ = HttpStatus::MovedPermanently301;
+        setHeader(HttpHeaderName::LOCATION, url);
+    }
+
+    void setHeader(string_view header, string_view value)
+    {
+        headers_.insert({header, value});
+    }
+
+    void addContent(string_view content)
+    {
+        contentBuff_.append(content.data(), content.size());
+    }
+
+    void addCookie(string_view name, string_view value)
+    {
+        Cookie ck(name, value);
+        headers_.insert({HttpHeaderName::SET_COOKIE, ck.getCookieStr()});
+    }
+
+    void addCookie(const Cookie & ck)
+    {
+        headers_.insert({HttpHeaderName::SET_COOKIE, ck.getCookieStr()});
+    }
+
+    void setContentType(string_view type) 
+    {
+        headers_.insert({HttpHeaderName::CONTENT_TYPE, type});
+    }
+
+    void setFileAsContent(string_view fileName)
+    {
+        fileName_ = fileName;
+    }
 
 private:
-    void ErrorHtml();
-    std::string GetFileType();
-
-    int mCode;
-    bool mIsKeepAlive;
-
-    std::string mResourcePath;
-    std::string mSrcDir;
-    
-    char* mMmFile; 
-    struct stat mMmFileStat;
-
-    static const std::unordered_map<std::string, std::string> SUFFIX_TYPE;
-    static const std::unordered_map<int, std::string> CODE_TO_STATUS;
-    static const std::unordered_map<int, std::string> ERRCODE_TO_PATH;
+    string statusCode_;
+    string contentType_;
+    string fileName_;
+    Buffer contentBuff_;
+    std::multimap<string, string> headers_;
 };
 
 
-#endif //HTTP_RESPONSE_H
+#endif //HTTPRESPONSE_H

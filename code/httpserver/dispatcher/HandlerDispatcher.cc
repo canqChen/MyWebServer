@@ -1,19 +1,41 @@
 #include "./HandlerDispatcher.h"
+#include <regex>
 
-HandlerDispatcher* HandlerDispatcher::getInstance() 
+
+
+void HandlerDispatcher::registerHandlerCallback(string_view uri, 
+    string_view method, HandlerCallBack && handler)
 {
-    static HandlerDispatcher instance;
-    return &instance;
+    string uriStr(uri);
+    string methodStr(method);
+    std::pair<string, string> key(uriStr, methodStr);
+    handlerChains_[key].addHandler(std::forward<HandlerChain>(handler));
 }
 
-void HandlerDispatcher::register_(const std::string & uri, 
-    const std::string &method, HandlerCallBack && handler)
+void HandlerDispatcher::registerInterceptor(string_view uri, 
+    string_view method, InterceptorCallBack && InterceptorCallBack)
 {
-
+    string uriStr(uri);
+    string methodStr(method);
+    std::pair<string, string> key(uriStr, methodStr);
+    handlerChains_[key].addInterceptor(std::forward<HandlerChain>(handler));
 }
 
-HandlerCallBack HandlerDispatcher::getHandler(const std::string & uri, 
-    const std::string &method)
+HandlerCallBack HandlerDispatcher::getHandler(string_view uri, string_view method)
 {
-
+    string uriStr(uri);
+    string methodStr(method);
+    std::pair<string, string> key(uriStr, methodStr);
+    if(handlerChains_.count(key)) {
+        return handlerChains_[key];
+    }
+    for(auto&[key, hc] : handlerChains_) {
+        std::regex pattern(key.first);
+        std::smatch sm;
+        if(methodStr == key.second && std::regex_match(uriStr, sm, pattern)) {
+            return hc;
+        }
+    }
+    return nullptr;
 }
+

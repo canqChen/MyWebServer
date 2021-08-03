@@ -5,17 +5,64 @@
 # include "../utils/StringUtils.h"
 
 using std::string;
+using std::string_view;
 
 class Cookie {
 public:
-    explicit Cookie(string name, string value, string domain="/", string path="", 
+    explicit Cookie(string_view name="", string_view value="", string_view domain="/", string_view path="", 
     long maxAge=-1, bool httpOnly=false, bool secure=false);
     ~Cookie(){};
-    void setDomain(string domain);
-    void setPath(string path);
-    void setMaxAge(long maxAge);
-    void setHttpOnly(bool httpOnly);
-    void setSecure(bool secure);
+    void setName(string_view name) 
+    {
+        name_ = name;
+    }
+
+    void setValue(string_view value) 
+    {
+        value_ = value;
+    }
+
+    void setDomain(string_view domain) 
+    {
+        this->domain_ = domain;
+    }
+
+    void setPath(string_view path) 
+    {
+        this->path_ = path;
+    }
+
+    void setMaxAge(long maxAge) 
+    {
+        this->maxAge_ = maxAge;
+    }
+
+    void setHttpOnly(bool httpOnly) 
+    {
+        this->httpOnly_ = httpOnly;
+    }
+
+    void setSecure(bool secure) 
+    {
+        this->secure_ = secure;
+    }
+
+    string getName() const 
+    {
+        return name_;
+    }
+
+    string getValue() const 
+    {
+        return value_;
+    }
+
+    bool isEmpty()
+    {
+        return StringUtils::isEmpty(name_) 
+            || StringUtils::isEmpty(value_);
+    }
+
     string getCookieStr() const;
 private:
     string name_;

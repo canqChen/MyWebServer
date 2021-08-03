@@ -39,10 +39,10 @@ string StringUtils::joinString(const vector<string> & strVec, string_view delimi
     return ret;
 }
 
-vector<string> StringUtils::split(const string & str, string_view delimiter) 
+vector<string> StringUtils::split(string_view str, string_view delimiter) 
 {
     if(delimiter == "")
-        return {str};
+        return {str.data()};
     vector<string> ret;
     auto it = str.begin();
     auto start = str.begin();
@@ -72,7 +72,7 @@ unsigned char StringUtils::toUpper(const unsigned char ch)
     return ch;
 }
 
-string StringUtils::toLower(const string & str) 
+string StringUtils::toLower(string_view str) 
 {
     string ret;
     for(auto &ch : str) {
@@ -81,7 +81,7 @@ string StringUtils::toLower(const string & str)
     return ret;
 }
 
-string StringUtils::toUpper(const string & str) 
+string StringUtils::toUpper(string_view str) 
 {
     string ret;
     for(auto &ch : str) {
@@ -114,7 +114,8 @@ bool StringUtils::isEndWith(string_view str, string_view pattern)
     return false;
 }
 
-bool StringUtils::equalIgnoreCases(string_view str1, string_view str2) {
+bool StringUtils::equalIgnoreCases(string_view str1, string_view str2) 
+{
     if(str1.size() != str2.size()) {
         return false;
     }
@@ -124,4 +125,14 @@ bool StringUtils::equalIgnoreCases(string_view str1, string_view str2) {
         }
     }
     return true;
+}
+
+string StringUtils::getSuffix(string_view filename) 
+{
+    string tmp(filename);
+    auto idx = tmp.find_last_of('.');
+    if(idx == tmp.npos) {
+        return "";
+    }
+    return tmp.substr(idx);
 }
