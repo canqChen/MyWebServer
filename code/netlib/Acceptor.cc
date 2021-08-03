@@ -49,7 +49,8 @@ Acceptor::~Acceptor() {
     ::close(lisentFd_);
 }
 
-void Acceptor::__handleAcceptable() {
+void Acceptor::__handleAcceptable() 
+{
     loop_->assertInLoopThread();
 
     struct sockaddr_in addr;

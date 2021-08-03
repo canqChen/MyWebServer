@@ -218,7 +218,8 @@ void TcpConnection::__handleRead()
         __handleClose();
     }
     else {  // process upper-level logic
-        messageCallback_(shared_from_this(), inputBuffer_);
+        auto guardThis = shared_from_this();
+        messageCallback_(guardThis, inputBuffer_);
     }
 }
 

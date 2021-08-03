@@ -5,7 +5,6 @@
 
 #include "InetAddress.h"
 #include "Channel.h"
-#include "../common/NoCopyable.h"
 
 class Connector: NoCopyable
 {

@@ -36,7 +36,7 @@ void Socket::setLinger(const int fd, int sec)
     optLinger.l_onoff = 1;
     optLinger.l_linger = sec; // 单位：s
 
-    int ret = setsockopt(listenFd_, SOL_SOCKET, SO_LINGER, &optLinger, sizeof(optLinger));
+    int ret = setsockopt(fd, SOL_SOCKET, SO_LINGER, &optLinger, sizeof(optLinger));
     if(ret < 0) {
         close(fd);
         LOG_FATAL("Socket::setLinger() set SO_LINGER fail!");

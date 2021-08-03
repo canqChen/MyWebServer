@@ -1,4 +1,4 @@
-#include "httpserver/http/HttpCodec.h"
+#include "HttpCodec.h"
 
 #include <regex>
 #include <fcntl.h>       // open
@@ -8,11 +8,11 @@
 #include <sys/mman.h>    // mmap, munmap
 
 #include "../utils/StringUtils.h"
-#include "../http/HttpUtils.h"
+#include "HttpUtils.h"
 #include "../../common/Buffer.h"
 #include "../../common/Log.h"
 #include "../utils/URLEncodeUtil.h"
-#include "../http/HttpRequest.h"
+#include "HttpRequest.h"
 
 using std::smatch;
 using std::regex;

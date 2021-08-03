@@ -1,8 +1,6 @@
-#include "Channel.h"
-
 #include <cassert>
-
-
+#include "EventLoop.h"
+#include "Channel.h"
 
 Channel::Channel(EventLoop* loop, int fd)
         : polling_(false), loop_(loop),

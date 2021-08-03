@@ -1,4 +1,3 @@
-#include "EventLoop.h"
 
 #include <cassert>
 #include <sys/eventfd.h>
@@ -9,9 +8,10 @@
 #include <numeric>
 
 
-#include "Channel.h"
-
 #include "../common/Log.h"
+#include "Channel.h"
+#include "EventLoop.h"
+
 
 // __thread声明每个线程独立变量
 __thread EventLoop* t_Eventloop = nullptr;

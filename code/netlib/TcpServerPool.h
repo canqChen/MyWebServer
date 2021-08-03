@@ -3,16 +3,10 @@
 
 #include <vector>
 #include <thread>
-#include <mutex>
-#include <atomic>
 #include <condition_variable>
 
 #include "TcpServer.h"
-#include "InetAddress.h"
-#include "Callbacks.h"
-#include "../common/NoCopyable.h"
 
-class EventLoop;
 
 // create multiple sub server, one loop in each sub server
 class TcpServerPool: NoCopyable

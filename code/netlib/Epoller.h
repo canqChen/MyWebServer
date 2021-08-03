@@ -10,8 +10,8 @@
 
 #include "../common/NoCopyable.h"
 
-class Channel;
 class EventLoop;
+class Channel;
 
 class Epoller : NoCopyable {
 public:

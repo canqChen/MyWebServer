@@ -1,5 +1,5 @@
 CXX = g++
-CFLAGS = -std=c++17 -O2 -Wall -g 
+CFLAGS = -std=c++17 -O2 -w -g   # -Wall
 
 TARGET = server
 OBJS = ../code/common/*.cc ../code/netlib/*.cc ../code/httpserver/*.cc \

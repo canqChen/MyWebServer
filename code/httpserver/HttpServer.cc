@@ -1,6 +1,6 @@
 #include "HttpServer.h"
 
-#include "../../common/Log.h"
+#include "../common/Log.h"
 #include "http/HttpCodec.h"
 
 #include "handler/StaticResourceHandler.h"

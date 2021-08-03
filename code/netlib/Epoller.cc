@@ -5,7 +5,6 @@
 
 #include "../common/Log.h"
 #include "EventLoop.h"
-#include "Channel.h"
 
 Epoller::Epoller(EventLoop* loop)
         :loop_(loop),
@@ -20,7 +19,8 @@ Epoller::~Epoller() {
     ::close(epollfd_);
 }
 
-void Epoller::poll(ChannelList& activeChannels, int timeoutMs = -1) {
+void Epoller::poll(ChannelList& activeChannels, int timeoutMs = -1) 
+{
     loop_->assertInLoopThread();
     int maxEvents = static_cast<int>(events_.size());
     int nEvents = epoll_wait(epollfd_, events_.data(), maxEvents, timeoutMs);
@@ -41,7 +41,8 @@ void Epoller::poll(ChannelList& activeChannels, int timeoutMs = -1) {
     }
 }
 
-void Epoller::updateChannel(Channel* channel) {
+void Epoller::updateChannel(Channel* channel) 
+{
     loop_->assertInLoopThread();
     int op = 0;
     if (!channel->isPooling()) { // 如果不被监听状态，加入监听列表
@@ -59,7 +60,8 @@ void Epoller::updateChannel(Channel* channel) {
     __updateChannel(op, channel);
 }
 
-void Epoller::__updateChannel(int op, Channel* channel) {
+void Epoller::__updateChannel(int op, Channel* channel) 
+{
     struct epoll_event ee;
     ee.events = channel->getEvents();
     ee.data.ptr = channel;

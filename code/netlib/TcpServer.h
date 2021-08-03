@@ -3,11 +3,10 @@
 
 #include <unordered_set>
 
-#include "Callbacks.h"
 #include "Acceptor.h"
+#include "EventLoop.h"
 
 
-class EventLoop;
 // one evenloop per server, run the loop in a thread
 class TcpServer : NoCopyable
 {

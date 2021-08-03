@@ -4,9 +4,8 @@
 #include <mutex>
 #include <atomic>
 
+#include "Timer.h"
 #include "Epoller.h"
-#include "Channel.h"
-#include "../common/NoCopyable.h"
 #include "TimerQueue.h"
 
 
