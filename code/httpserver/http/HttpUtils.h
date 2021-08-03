@@ -12,20 +12,20 @@ using std::string_view;
 using std::unordered_map;
 using std::unordered_set;
 
-namespace HttpMethod 
+struct HttpMethod 
 {
-    const string UNKNOWN = "unknown";
-    const string HEAD = "HEAD";
-    const string GET = "GET";
-    const string POST = "POST";
-    const string PUT = "PUT";
-    const string DELETE = "DELETE";
+    static const string UNKNOWN = "unknown";
+    static const string HEAD = "HEAD";
+    static const string GET = "GET";
+    static const string POST = "POST";
+    static const string PUT = "PUT";
+    static const string DELETE = "DELETE";
 
-    const unordered_set<string> methodTable_ {
+    static const unordered_set<string> methodTable_ {
         GET, POST
     };
     
-    bool contain(string_view method) 
+    static bool contain(string_view method) 
     {
         string tmp(method);
         if(methodTable_.find(tmp) != methodTable_.end()) {
@@ -33,21 +33,21 @@ namespace HttpMethod
         }
         return false;
     }
-}
+};
 
-namespace HttpStatus 
+struct HttpStatus 
 {
-    const string UNKNOWN = "unknown";
-    const string OK200 = "200";
-    const string MovedPermanently301 = "301";
-    const string BadRequest400 = "400";
-    const string Forbidden403 = "403";
-    const string NotFound404 = "404";
-    const string MethodNotAllow405 = "405";
-    const string InternalServerError500 = "500";
-    const string HttpVersionNotSupported505 = "505";
+    static const string UNKNOWN = "unknown";
+    static const string OK200 = "200";
+    static const string MovedPermanently301 = "301";
+    static const string BadRequest400 = "400";
+    static const string Forbidden403 = "403";
+    static const string NotFound404 = "404";
+    static const string MethodNotAllow405 = "405";
+    static const string InternalServerError500 = "500";
+    static const string HttpVersionNotSupported505 = "505";
 
-    const unordered_map<string, string> STATUS_ {
+    static const unordered_map<string, string> STATUS_ {
         {OK200, "OK"}, {MovedPermanently301, "Moved Permanently"}, 
         {BadRequest400, "Bad Request"}, {Forbidden403, "Forbidden"}, 
         {NotFound404, "Not Found"}, {MethodNotAllow405, "Method Not Allowed"},
@@ -55,7 +55,7 @@ namespace HttpStatus
         {HttpVersionNotSupported505, "HTTP Version not supported"}
     };
 
-    string getStatus(string_view statusCode) 
+    static string getStatus(string_view statusCode) 
     {
         string tmp(statusCode);
         if(STATUS_.count(tmp)) {
@@ -63,18 +63,18 @@ namespace HttpStatus
         }
         return STATUS_.at(InternalServerError500);
     }
-}
+};
 
-namespace HttpVersion
+struct HttpVersion
 {
-    const string ErrorVersion = "error";
-    const string Version1_1 = "1.1";
+    static const string ErrorVersion = "error";
+    static const string Version1_1 = "1.1";
 
-    const unordered_set<string> versionTable_ {
+    static const unordered_set<string> versionTable_ {
         Version1_1
     };
 
-    bool contain(string_view version) 
+    static bool contain(string_view version) 
     {
         string tmp(version);
         if(versionTable_.find(tmp) != versionTable_.end()) {
@@ -82,45 +82,45 @@ namespace HttpVersion
         }
         return false;
     }
-}
+};
 
-namespace HttpHeaderName 
+struct HttpHeaderName 
 {
-    const string CONTENT_TYPE = "Content-Type";
-    const string COOKIE = "Cookie";
-    const string SET_COOKIE = "Set-Cookie";
-    const string CONNECTION = "Connection";
-    const string CONTENT_LENGTH = "Content-Length";
-    const string REFRER = "Referer";
-    const string HOST = "Host";
-    const string LOCATION  = "Location";
-    const string SERVER = "Server";
-}
+    static const string CONTENT_TYPE = "Content-Type";
+    static const string COOKIE = "Cookie";
+    static const string SET_COOKIE = "Set-Cookie";
+    static const string CONNECTION = "Connection";
+    static const string CONTENT_LENGTH = "Content-Length";
+    static const string REFRER = "Referer";
+    static const string HOST = "Host";
+    static const string LOCATION  = "Location";
+    static const string SERVER = "Server";
+};
 
-namespace MIME 
+struct MIME 
 {
-    const string JSON = "application/json; charset=UTF-8";
-    const string MULTIPART_FORM_DATA = "multipart/form-data";
-    const string WWW_FORM_URLENCODED = "application/x-www-form-urlencoded";
-    const string HTML = "text/html; charset=UTF-8";
-    const string TXT = "text/plain; charset=UTF-8";
-    const string JPG = "image/jpeg";
-    const string PNG = "image/png";
-    const string MPEG = "video/mpeg";
-    const string AVI = "video/x-msvideo";
-    const string GZ = "application/x-gzip";
-    const string TAR = "application/x-tar";
-    const string RAR = "application/x-rar-compressed";
-    const string GIF = "image/gif";
-    const string BIN = "application/octet-stream";
-    const string MP4 = "video/mp4";
-    const string MP3 = "audio/x-mpeg";
-    const string PDF = "application/pdf";
-    const string CSS = "text/css";
-    const string JS = "text/javascript";
-    const string XML = "text/xml";
+    static const string JSON = "application/json; charset=UTF-8";
+    static const string MULTIPART_FORM_DATA = "multipart/form-data";
+    static const string WWW_FORM_URLENCODED = "application/x-www-form-urlencoded";
+    static const string HTML = "text/html; charset=UTF-8";
+    static const string TXT = "text/plain; charset=UTF-8";
+    static const string JPG = "image/jpeg";
+    static const string PNG = "image/png";
+    static const string MPEG = "video/mpeg";
+    static const string AVI = "video/x-msvideo";
+    static const string GZ = "application/x-gzip";
+    static const string TAR = "application/x-tar";
+    static const string RAR = "application/x-rar-compressed";
+    static const string GIF = "image/gif";
+    static const string BIN = "application/octet-stream";
+    static const string MP4 = "video/mp4";
+    static const string MP3 = "audio/x-mpeg";
+    static const string PDF = "application/pdf";
+    static const string CSS = "text/css";
+    static const string JS = "text/javascript";
+    static const string XML = "text/xml";
 
-    const unordered_map<string, string> SUFFIX2TYPE_ {
+    static const unordered_map<string, string> SUFFIX2TYPE_ {
         {".html", HTML}, {".txt", TXT}, {".jpg", JPG}, {".png", PNG}, 
         {".mp4", MP4}, {".mp3", MP3}, {".avi", AVI}, {".json", JSON}, 
         {".tar", TAR}, {".rar", RAR}, {".gif", GIF}, {".bin", BIN}, 
@@ -128,7 +128,7 @@ namespace MIME
         {".xml", XML}
     };
 
-    string getContentTypeBySuffix(string_view suffix) 
+    static string getContentTypeBySuffix(string_view suffix) 
     {
         string suf = string(suffix);
         if(SUFFIX2TYPE_.find(suf) != SUFFIX2TYPE_.end()) {
@@ -136,11 +136,11 @@ namespace MIME
         }
         return TXT;
     }
-}
+};
 
-namespace HttpErrorHtml
+struct HttpErrorHtml
 {
-    const unordered_map<string, string> errorHtml_ {
+    static const unordered_map<string, string> errorHtml_ {
         {HttpStatus::BadRequest400, "/400.html"}, 
         {HttpStatus::Forbidden403, "/403.html"},
         {HttpStatus::NotFound404, "/404.html"}, 
@@ -148,14 +148,14 @@ namespace HttpErrorHtml
         {HttpStatus::UNKNOWN, "/error.html"}
     };
 
-    string getErrorHtmlByStatusCode(string_view code) {
+    static string getErrorHtmlByStatusCode(string_view code) {
         string tmp(code);
         if(errorHtml_.count(tmp)) {
             return errorHtml_.at(tmp);
         }
         return errorHtml_.at(HttpStatus::UNKNOWN);
     }
-}
+};
 
 const char * CRLF = "\r\n";
 

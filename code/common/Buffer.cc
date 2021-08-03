@@ -103,15 +103,15 @@ string Buffer::retrieveUtil(const char * pos)
 
 const char * Buffer::findCRLF() const 
 {
-    auto CRLF = "\r\n";
-    const char* pos = std::search(readPtr(), writePtr(), CRLF, CRLF + 2);
+    auto crlf = "\r\n";
+    const char* pos = std::search(readPtr(), writePtr(), crlf, crlf + 2);
     return pos == writePtr() ? nullptr : pos;
 }
 
 const char * Buffer::findDoubleCRLF() const 
 {
-    auto CRLF = "\r\n\r\n";
-    const char* pos = std::search(readPtr(), writePtr(), CRLF, CRLF + 2);
+    auto crlf = "\r\n\r\n";
+    const char* pos = std::search(readPtr(), writePtr(), crlf, crlf + 2);
     return pos == writePtr() ? nullptr : pos;
 }
 
