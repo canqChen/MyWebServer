@@ -1,8 +1,10 @@
 #ifndef EVENTLOOP_H
 #define EVENTLOOP_H
 
+#include <mutex>
+
 #include "../common/NoCopyable.h"
-#include "Timer.h"
+#include "TimerQueue.h"
 #include "Epoller.h"
 #include "Channel.h"
 

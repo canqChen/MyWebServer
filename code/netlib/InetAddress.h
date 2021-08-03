@@ -6,6 +6,7 @@
 
 class InetAddress {
 public:
+    InetAddress() = default;
     explicit
     InetAddress(uint16_t port, bool loopback = false);
     InetAddress(std::string_view ip, uint16_t port);

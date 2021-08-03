@@ -30,7 +30,7 @@ void Socket::setReusePort(const int fd)
     }
 }
 
-int Socket::setLinger(const int fd, int sec)
+void Socket::setLinger(const int fd, int sec)
 {
     struct linger optLinger = { 0 };
     optLinger.l_onoff = 1;

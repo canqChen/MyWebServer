@@ -56,10 +56,11 @@ namespace HttpStatus
 
     string getStatus(string_view statusCode) 
     {
-        if(STATUS_.count(statusCode)) {
-            return STATUS_.at(statusCode);
+        string tmp(statusCode);
+        if(STATUS_.count(tmp)) {
+            return STATUS_.at(tmp);
         }
-        return STATUS_[InternalServerError500];
+        return STATUS_.at(InternalServerError500);
     }
 }
 
@@ -129,7 +130,7 @@ namespace MIME
     {
         string suf = string(suffix);
         if(SUFFIX2TYPE_.find(suf) != SUFFIX2TYPE_.end()) {
-            return SUFFIX2TYPE_[suf];
+            return SUFFIX2TYPE_.at(suf);
         }
         return TXT;
     }
@@ -148,9 +149,9 @@ namespace HttpErrorHtml
     string getErrorHtmlByStatusCode(string_view code) {
         string tmp(code);
         if(errorHtml_.count(tmp)) {
-            return errorHtml_[tmp];
+            return errorHtml_.at(tmp);
         }
-        return errorHtml_[HttpStatus::UNKNOWN];
+        return errorHtml_.at(HttpStatus::UNKNOWN);
     }
 }
 

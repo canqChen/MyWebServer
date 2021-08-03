@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include "httpserver/HttpServer.h"
 #include "httpserver/Config.h"
+#include "common/Log.h"
 
 int logLevel;
 

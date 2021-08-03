@@ -2,7 +2,7 @@
 
 #include "../../common/Log.h"
 #include "http/HttpCodec.h"
-#include "dispatcher/HandlerDispatcher.h"
+
 #include "handler/StaticResourceHandler.h"
 #include "interceptor/CheckHttpValidInterceptor.h"
 

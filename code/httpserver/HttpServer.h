@@ -2,6 +2,9 @@
 #define HTTPSERVER_H
 
 #include "../netlib/TcpServerPool.h"
+#include "handler/AbstractHandler.h"
+#include "interceptor/AbstractInterceptor.h"
+#include "dispatcher/HandlerDispatcher.h"
 
 class HttpServer: NoCopyable
 {

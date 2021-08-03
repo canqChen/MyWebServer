@@ -8,7 +8,7 @@
 #include "Socket.h"
 
 
-Acceptor::Acceptor(EventLoop* loop, const InetAddress& local, bool isLinger = false)
+Acceptor::Acceptor(EventLoop* loop, const InetAddress& local, bool isLinger)
         : listening_(false), loop_(loop), lisentFd_(Socket::createSocket()),
           acceptChannel_(loop, lisentFd_), local_(local) 
 {
@@ -26,7 +26,7 @@ Acceptor::Acceptor(EventLoop* loop, const InetAddress& local, bool isLinger = fa
         Socket::setLinger(lisentFd_, 5);
     }
     
-    ret = ::bind(lisentFd_, local.getSockaddr(), local.getSocklen());
+    int ret = ::bind(lisentFd_, local.getSockaddr(), local.getSocklen());
     if (ret == -1) {
         LOG_FATAL("Acceptor::bind() fail!");
     }

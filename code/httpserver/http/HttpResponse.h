@@ -35,7 +35,8 @@ public:
 
     void setHeader(string_view header, string_view value)
     {
-        headers_.insert({header, value});
+        
+        headers_.insert({string(header), string(value)});
     }
 
     void addContent(string_view content)

@@ -5,7 +5,7 @@
 
 
 Channel::Channel(EventLoop* loop, int fd)
-        : polling(false), loop_(loop),
+        : polling_(false), loop_(loop),
           fd_(fd), tied_(false),
           events_(0), revents_(0),
           handlingEvents_(false)

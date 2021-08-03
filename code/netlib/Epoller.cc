@@ -4,8 +4,7 @@
 #include <cassert>
 
 #include "../common/Log.h"
-#include "EventLoop.h"
-#include "Channel.h"
+
 
 Epoller::Epoller(EventLoop* loop)
         :loop_(loop),

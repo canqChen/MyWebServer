@@ -7,12 +7,10 @@
 #include "Channel.h"
 #include "../common/NoCopyable.h"
 
-class EventLoop;
-class InetAddress;
-
 class Connector: NoCopyable
 {
 public:
+    typedef std::function<void()> EventCallback;
     Connector(EventLoop* loop, const InetAddress& peer);
     ~Connector();
 
@@ -38,7 +36,7 @@ private:
     bool started_;
     Channel channel_;
     NewConnectionCallback newConnectionCallback_;
-    ErrorCallback errorCallback_;
+    EventCallback errorCallback_;
 };
 
 

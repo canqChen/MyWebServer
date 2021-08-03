@@ -31,10 +31,6 @@ public:
     string getRequestMethod() const {
         return requestMethod_;
     }
-    
-    string getHttpVersion() const {
-        return httpVersion_;
-    }
 
     // for other conversion
     string getRequestBody() const{
