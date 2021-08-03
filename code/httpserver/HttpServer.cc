@@ -13,6 +13,16 @@ HttpServer::HttpServer(const InetAddress& local, size_t nLoops, size_t nWorker)
     assert(nLoops_ > 0 && nWorker_ > 0);
 }
 
+HttpServer::~HttpServer() 
+{
+    for(auto ptr : handlerList_) {
+        delete ptr;
+    }
+    for(auto ptr : interceptorList_) {
+        delete ptr;
+    }
+}
+
 void HttpServer::start()
 {
     __setHandlerCallback();
@@ -69,5 +79,5 @@ void HttpServer::__setHandlerCallback()
     dispatcher_->registerHandlerCallback(staticPattern, HttpMethod::GET, 
         [ptr = handlerList_.back()](const HttpRequestPtr &req, HttpResponsePtr & resp) {ptr->doGet(req, resp);});
     dispatcher_->registerInterceptor(staticPattern, HttpMethod::GET, 
-        [ptr = interceptorList_.back()](const HttpRequestPtr &req, HttpResponsePtr & resp) {ptr->doIntercept(req, resp);});
+        [ptr = interceptorList_.back()](const HttpRequestPtr &req, HttpResponsePtr & resp)->bool{return ptr->doIntercept(req, resp);});
 }

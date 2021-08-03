@@ -3,19 +3,14 @@
 #include "httpserver/Config.h"
 #include "common/Log.h"
 
-int logLevel;
-
-#ifndef NDEBUG
-logLevel = DEBUG;
-#else
-logLevel = INFO;
-#endif
-
 int main() {
     // 守护进程 后台运行
     //daemon(1, 0); 
-
-    Log::getInstance()->init(static_cast<LogLevel>(logLevel));
+#ifndef NDEBUG
+    Log::getInstance()->init(DEBUG);
+#else
+    Log::getInstance()->init(INFO);
+#endif
     InetAddress local(Config::SERVERK_PORT);
     HttpServer server(local, Config::LOOPS, Config::WORKERS);
     server.start();

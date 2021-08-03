@@ -24,7 +24,6 @@ enum LogLevel {
     OFF
 };
 
-extern int logLevel;
 
 class Log : NoCopyable{
 public:

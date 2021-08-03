@@ -3,21 +3,21 @@
 
 
 void HandlerDispatcher::registerHandlerCallback(string_view uri, 
-    string_view method, HandlerCallBack && handler)
+    string_view method, HandlerCallBack handler)
 {
     string uriStr(uri);
     string methodStr(method);
     std::pair<string, string> key(uriStr, methodStr);
-    handlerChains_[key].addHandler(std::forward<HandlerCallBack>(handler));
+    handlerChains_[key].addHandler(std::move(handler));
 }
 
 void HandlerDispatcher::registerInterceptor(string_view uri, 
-    string_view method, InterceptorCallBack && interceptor)
+    string_view method, InterceptorCallBack interceptor)
 {
     string uriStr(uri);
     string methodStr(method);
     std::pair<string, string> key(uriStr, methodStr);
-    handlerChains_[key].addInterceptor(std::forward<InterceptorCallBack>(interceptor));
+    handlerChains_[key].addInterceptor(std::move(interceptor));
 }
 
 HandlerCallBack HandlerDispatcher::getHandler(string_view uri, string_view method)
