@@ -1,9 +1,9 @@
-#include <strings.h>
+#include "netlib/TimerQueue.h"
 
+#include <strings.h>
 
 #include "netlib/TimerFdUtils.h"
 #include "netlib/EventLoop.h"
-#include "netlib/TimerQueue.h"
 
 
 TimerQueue::TimerQueue(EventLoop *loop)

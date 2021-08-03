@@ -1,8 +1,9 @@
+#include "netlib/InetAddress.h"
+
 #include <arpa/inet.h>
 #include <strings.h>
 
 #include "common/Log.h"
-#include "netlib/InetAddress.h"
 
 
 InetAddress::InetAddress(uint16_t port, bool loopback) {

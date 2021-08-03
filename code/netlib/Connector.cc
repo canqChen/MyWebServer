@@ -1,10 +1,11 @@
+#include "netlib/Connector.h"
+
 #include <unistd.h>
 #include <sys/socket.h>
 #include <cassert>
 
 #include "netlib/EventLoop.h"
 #include "common/Log.h"
-#include "netlib/Connector.h"
 #include "netlib/Socket.h"
 
 

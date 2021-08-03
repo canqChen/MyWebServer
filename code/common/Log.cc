@@ -27,7 +27,7 @@ LogLevel Log::getLevel()
     return level_;
 }
 
-void Log::setLevel(int level)
+void Log::setLogLevel(LogLevel level)
 {
     lock_guard<mutex> locker(mtx_);
     level_ = level;
@@ -80,7 +80,7 @@ void Log::__openFile(string fileName) {
         // 清空缓冲区
         fflush(fp_);
         fclose(fp_);
-        fp_ == nullptr;
+        fp_ = nullptr;
     }
     // 创建或打开文件
     fp_ = fopen(fileName.c_str(), "a");
@@ -89,7 +89,7 @@ void Log::__openFile(string fileName) {
 
 // 只在init时使用，确定起始文件名(fileIdx_)
 void Log::__determineLogIdx(struct tm sysTime) {
-    while(access(__genFileName(sysTime), F_OK) == 0) {
+    while(access(__genFileName(sysTime).c_str(), F_OK) == 0) {
         ++fileIdx_;
     }
 }
@@ -100,7 +100,7 @@ void Log::__changeLogFile(struct tm sysTime) {
     // 将日志队列里面的旧日志清空
     __flushAll();
     // 如果是时间不是今天，则创建今天的日志，更新today_和lineCount_
-    if (today_ != t.tm_mday) {
+    if (today_ != sysTime.tm_mday) {
         // 第二天的日志文件，从0开始计数
         fileIdx_ = 0;
         // 新日志文件，行数从0开始
@@ -132,12 +132,19 @@ struct tm {
         int tm_yday;        // day in the year : The number of days since January 1, in the range 0 to 365.
         int tm_isdst;       // daylight saving time : A flag that indicates whether daylight saving time is in effect at the  time  described. The value is positive if daylight saving time is in effect, zero if it is not, and negative if the information is not available.
 };
+
+struct timeval
+{
+    long tv_sec; /*秒*/
+    long tv_usec; /*微秒*/
+};
+
 #endif
 
 void Log::logBase(const char * file, int line, LogLevel level, bool to_abort, const char *format, ...)
 {
     if (__isFileOpen() && int(level_) <= int(level)) {
-        va_lsit vaList;
+        va_list vaList;
         va_start(vaList, format);
         __write(file, line, level, format, vaList);
         va_end(vaList);
@@ -153,11 +160,11 @@ void Log::logBase(const char * file, int line, LogLevel level, bool to_abort, co
 void Log::__write(const char * file, int line, LogLevel level, const char *format, va_list vaList) {
     // 加锁检查是否需要更新写入的日志文件
     // 获取当前系统时间
-    Buffer buff;
+    Buffer buff(256, 8);
     struct timeval now = {0, 0};
-    gettimeofday(&now, nullptr);
+    gettimeofday(&now, nullptr); // 返回当前距离1970年的秒数和微妙数，后面的tz是时区，一般不用
     time_t tSec = now.tv_sec;
-    struct tm *sysTime = localtime(&tSec);
+    struct tm *sysTime = localtime(&tSec); // 将time_t表示的时间转换为没有经过时区转换的UTC时间，是一个struct tm结构指针
 
     // 加锁是因为可能需要更新写入的文件
     unique_lock<mutex> locker(mtx_);
@@ -173,7 +180,7 @@ void Log::__write(const char * file, int line, LogLevel level, const char *forma
     // 日志时间戳
     int n = snprintf(buff.writePtr(), 128, "%d-%02d-%02d %02d:%02d:%02d.%06ld-[%d]-[%s:%d]",  // 年-月-日 hh-mm-ss.us-[pid]-[file:line]
                         sysTime->tm_year + 1900, sysTime->tm_mon + 1, sysTime->tm_mday,
-                        sysTime->tm_hour, sysTime->tm_min, sysTime->tm_sec, tv.tv_usec, 
+                        sysTime->tm_hour, sysTime->tm_min, sysTime->tm_sec, now.tv_usec, 
                         getpid(), strrchr(file, '/') + 1, line);
 
     buff.updateWritePos(n);

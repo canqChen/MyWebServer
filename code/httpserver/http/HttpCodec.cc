@@ -1,3 +1,5 @@
+#include "httpserver/http/HttpCodec.h"
+
 #include <regex>
 #include <fcntl.h>       // open
 #include <unistd.h>      // close
@@ -6,7 +8,6 @@
 #include <sys/mman.h>    // mmap, munmap
 
 #include "httpserver/utils/StringUtils.h"
-#include "httpserver/http/HttpCodec.h"
 #include "httpserver/http/HttpUtils.h"
 #include "common/Buffer.h"
 #include "common/Log.h"

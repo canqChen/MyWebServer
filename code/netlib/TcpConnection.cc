@@ -1,9 +1,10 @@
+#include "netlib/TcpConnection.h"
 #include <cassert>
 #include <unistd.h>
 
 #include "common/Log.h"
 #include "netlib/EventLoop.h"
-#include "netlib/TcpConnection.h"
+
 
 TcpConnection::TcpConnection(EventLoop *loop, int sockfd,
                              const InetAddress& local,

@@ -1,4 +1,4 @@
-#include "Buffer.h"
+#include "common/Buffer.h"
 
 Buffer::Buffer(size_t initBuffSize, size_t headerSize) 
     : headerSize_(headerSize), buff_(initBuffSize + headerSize), 
@@ -210,7 +210,7 @@ void Buffer::__makeSpace(size_t len)
     }
     // 覆盖buffer前面已经读出的数据，数据前移
     size_t readable = readableBytes();
-    std::copy(readPtr(), writePtr(), __beginPtr() + headerSize_);
+    std::copy(readPtr(), static_cast<const char*>(writePtr()), __beginPtr() + headerSize_);
     readIdx_ = headerSize_;
     writeIdx_ = readIdx_ + readable;
     assert(readable == readableBytes());

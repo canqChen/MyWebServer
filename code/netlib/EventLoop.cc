@@ -1,3 +1,5 @@
+#include "netlib/EventLoop.h"
+
 #include <cassert>
 #include <sys/eventfd.h>
 #include <sys/types.h> // pid_t
@@ -7,7 +9,6 @@
 #include <numeric>
 
 #include "common/Log.h"
-#include "netlib/EventLoop.h"
 
 // __thread声明每个线程独立变量
 __thread EventLoop* t_Eventloop = nullptr;
