@@ -22,13 +22,14 @@ Log::~Log()
 
 LogLevel Log::getLevel()
 {
-    // 运行过程更改日志级别需要加锁
-    lock_guard<mutex> locker(mtx_);
+    
+    // lock_guard<mutex> locker(mtx_);
     return level_;
 }
 
 void Log::setLogLevel(LogLevel level)
 {
+    // 运行过程更改日志级别需要加锁
     lock_guard<mutex> locker(mtx_);
     level_ = level;
 }

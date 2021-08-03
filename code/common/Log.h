@@ -73,13 +73,13 @@ private:
 
 #define LOG_BASE(level, to_abort, format, ...) (Log::getInstance()->logBase(__FILE__, __LINE__, level, to_abort, format, ##__VA_ARGS__))
 
-#define LOG_TRACE(format, ...) if(logLevel <= TRACE) \ 
+#define LOG_TRACE(format, ...) if(Log::getInstance()->getLevel() <= TRACE) \ 
 LOG_BASE(TRACE, false, format, ##__VA_ARGS__)
 
-#define LOG_DEBUG(format, ...) if(logLevel <= DEBUG) \ 
+#define LOG_DEBUG(format, ...) if(Log::getInstance()->getLevel() <= DEBUG) \ 
 LOG_BASE(DEBUG, false, format, ##__VA_ARGS__)
 
-#define LOG_INFO(format, ...) if(logLevel <= INFO) \ 
+#define LOG_INFO(format, ...) if(Log::getInstance()->getLevel() <= INFO) \ 
 LOG_BASE(INFO, false, format, ##__VA_ARGS__)
 
 #define LOG_WARN(format, ...) LOG_BASE(WARN, false, format, ##__VA_ARGS__)

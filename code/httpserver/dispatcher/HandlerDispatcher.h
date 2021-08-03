@@ -16,8 +16,8 @@ public:
     HandlerDispatcher();
     ~HandlerDispatcher();
 
-    void registerHandlerCallback(string_view uri, string_view method, HandlerCallBack && handler);
-    void registerInterceptor(string_view uri, string_view method, InterceptorCallBack && interceptor);
+    void registerHandlerCallback(string_view uri, string_view method, HandlerCallBack handler);
+    void registerInterceptor(string_view uri, string_view method, InterceptorCallBack interceptor);
     HandlerCallBack getHandler(string_view uri, string_view method);
     // InterceptorCallBack getInterceptor(const std::string & uri, const std::string &method);
 private:
