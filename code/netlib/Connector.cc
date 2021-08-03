@@ -60,7 +60,7 @@ void Connector::__handleWrite()
     }
     else if (newConnectionCallback_) {  // so_error为0，执行连接成功后的newConnectionCallback_
         struct sockaddr_in addr;
-        len = sizeof(addr);
+        size_t len = sizeof(addr);
         void* any = &addr;
         ret = ::getsockname(sockfd_, static_cast<sockaddr*>(any), &len);
         if (ret == -1)

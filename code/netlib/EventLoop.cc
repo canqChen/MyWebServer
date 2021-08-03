@@ -11,6 +11,7 @@
 #include "../common/Log.h"
 #include "Channel.h"
 #include "EventLoop.h"
+#include "Timestamp.h"
 
 
 // __thread声明每个线程独立变量

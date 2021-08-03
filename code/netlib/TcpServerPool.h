@@ -51,7 +51,7 @@ private:
     typedef std::unique_ptr<TcpServer> TcpServerPtr;
     typedef std::vector<EventLoop*> SubEventLoopList;
 
-    std::unique_ptr<EventLoop> baseLoop_;
+    EventLoop* baseLoop_;
     TcpServerPtr baseServer_;
     ThreadPtrList threads_;
     SubEventLoopList eventLoops_; // how many sub event loops

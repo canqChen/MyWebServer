@@ -1,12 +1,11 @@
 #ifndef TIMERFDUTILS_H
 #define TIMERFDUTILS_H
 
-#include "Timestamp.h"
-
 #include <sys/timerfd.h>
 #include <ratio> // std::nano::den
 #include <unistd.h>
 #include "../common/Log.h"
+#include "Timestamp.h"
 
 
 struct TimerFdUtils {

@@ -2,12 +2,13 @@
 #define TIMER_H
 
 #include <cassert>
-
+#include "../common/NoCopyable.h"
 #include "Callbacks.h"
 #include "Timestamp.h"
 
 // 定时器类
-class Timer: NoCopyable {
+class Timer: NoCopyable 
+{
 public:
     Timer(TimerCallback callback, Timestamp when, Nanosecond interval)
             : callback_(std::move(callback)),

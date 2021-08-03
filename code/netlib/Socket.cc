@@ -23,6 +23,7 @@ void Socket::setReuseAddr(const int fd)
 
 void Socket::setReusePort(const int fd)
 {
+    int on  = 1;
     int ret = setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, &on, sizeof(on));
     if (ret == -1) {
         close(fd);

@@ -139,14 +139,16 @@ bool HttpCodec::__parseHeader(const string& line, HttpRequestPtr& req)
     regex patten("^([^:]*): ?(.*)$");  // header: val
     smatch subMatch;
     if(regex_match(line, subMatch, patten)) {
-        string lowerHeader = StringUtils::toLower(subMatch[1]);
+        string sm1(subMatch[1]);
+        string sm2(subMatch[2]);
+        string lowerHeader = StringUtils::toLower(sm1);
         if(lowerHeader == StringUtils::toLower(HttpHeaderName::COOKIE)) {
-            __parseCookie(subMatch[2], req);
+            __parseCookie(sm2, req);
         }
         else {
-            req->requestHeaders_[lowerHeader] = StringUtils::trim(subMatch[2]);
+            req->requestHeaders_[lowerHeader] = StringUtils::trim(sm2);
         }
-        LOG_DEBUG("header: %s, value: %s", subMatch[1].c_str(), subMatch[2].c_str());
+        LOG_DEBUG("header: %s, value: %s", sm1.c_str(), sm2.c_str());
         return true;
     }
     return false;
@@ -155,11 +157,11 @@ bool HttpCodec::__parseHeader(const string& line, HttpRequestPtr& req)
 bool HttpCodec::__parseBody(const string& line, HttpRequestPtr& req) 
 {
     // record requestbody_
-    requestBody_ = line;
+    req->requestBody_ = line;
     LOG_DEBUG("Body:%s, len:%d", line.c_str(), line.size());
     // 解析post请求体
-    if(requestMethod_ == HttpMethod::POST) {
-        __parsePostBody(requestBody_, req);
+    if(req->requestMethod_ == HttpMethod::POST) {
+        __parsePostBody(req->requestBody_, req);
     }
     return true;
 }
@@ -200,9 +202,9 @@ void HttpCodec::__parseCookie(string & cookies, HttpRequestPtr& req)
     for(auto & cookieStr : cookieVec) {
         cookieStr = StringUtils::trim(cookieStr);
         auto pos = cookieStr.find_first_of('=');
-        string key = cookieStr.substr(0, pos);
-        string val = cookieStr.substr(pos + 1);
-        req->cookies_[key] = Cookie(key, value);
+        string key(std::move(cookieStr.substr(0, pos)));
+        string val(std::move(cookieStr.substr(pos + 1)));
+        req->cookies_[key] = Cookie(key, val);
         LOG_DEBUG("cookie: %s = %s", key.c_str(), val.c_str());
     }
 }
@@ -280,15 +282,15 @@ void HttpCodec::__setBody(const HttpResponsePtr& resp, Buffer & buff)
             stat(filePath.data(), &fileState);
             int srcFd = open(filePath.data(), O_RDONLY);
             if(srcFd < 0) {
-                __setErrorBody(buff, "Internal Server Error");
-                LOG_ERROR("Open file %s fail!", filePath.data())
+                __setErrorBody(resp, buff, "Internal Server Error");
+                LOG_ERROR("Open file %s fail!", filePath.data());
                 return;
             }
             LOG_DEBUG("Open file %s", filePath.data());
             // 将文件映射到内存提高文件的访问速度, MAP_PRIVATE 建立一个写入时拷贝的私有映射
             int* mmRet = (int*)mmap(0, fileState.st_size, PROT_READ, MAP_PRIVATE, srcFd, 0);
             if(*mmRet == -1) {
-                __setErrorBody(buff, "Internal Server Error");
+                __setErrorBody(resp, buff, "Internal Server Error");
                 LOG_ERROR("Map file %s fail!", filePath.data());
                 return;
             }
@@ -302,27 +304,27 @@ void HttpCodec::__setBody(const HttpResponsePtr& resp, Buffer & buff)
         }
         buff.append(HttpHeaderName::CONTENT_TYPE + ": " \
             + MIME::getContentTypeBySuffix(StringUtils::getSuffix(filePath)) + CRLF);
-        buff.append(HttpHeaderName::CONTENT_LENGTH + ": " + to_string(fileState.st_size) + CRLF + CRLF);
+        buff.append(HttpHeaderName::CONTENT_LENGTH + ": " + std::to_string(fileState.st_size) + CRLF + CRLF);
         buff.append(content, fileState.st_size);
     }
     else {
         size_t len = resp->contentBuff_.readableBytes();
         buff.append(HttpHeaderName::CONTENT_TYPE + ": " + resp->contentType_ + CRLF);
-        buff.append(HttpHeaderName::CONTENT_LENGTH + ": " + to_string(len) + CRLF + CRLF);
+        buff.append(HttpHeaderName::CONTENT_LENGTH + ": " + std::to_string(len) + CRLF + CRLF);
         buff.append(resp->contentBuff_.readPtr(), len);
     }
 }
 
 void HttpCodec::__setErrorBody(const HttpResponsePtr& resp, Buffer& buff, string_view errMessage) 
 {
-    string body;
+    std::string body;
     body += "<html><title>Error</title>";
     body += "<body bgcolor=\"ffffff\">";
     body += resp->statusCode_ + " : " + HttpStatus::getStatus(resp->statusCode_)  + "\n";
-    body += "<p>" + errMessage + "</p>";
+    body += "<p>" + std::string(errMessage) + "</p>";
     body += "<hr><em>WebServer by CCQ</em></body></html>";
     buff.append(HttpHeaderName::CONTENT_TYPE + ": " + MIME::HTML + CRLF);
-    buff.append(HttpHeaderName::CONTENT_LENGTH + ": " + to_string(body.size()) + CRLF + CRLF);
+    buff.append(HttpHeaderName::CONTENT_LENGTH + ": " + std::to_string(body.size()) + CRLF + CRLF);
     buff.append(body);
 }
 

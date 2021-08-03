@@ -16,9 +16,9 @@ HttpServer::HttpServer(const InetAddress& local, size_t nLoops, size_t nWorker)
 void HttpServer::start()
 {
     __setHandlerCallback();
-    tcpServerPool_->setMessageCallback(std::bind(__onMessage, this, _1, _2));
-    tcpServerPool_->setConnectionCallback(std::bind(__onConnectionBuilt, this, _1));
-    tcpServerPool_->setThreadInitCallback(std::bind(__onThreadInit, this, _1));
+    tcpServerPool_->setMessageCallback(std::bind(&HttpServer::__onMessage, this, _1, _2));
+    tcpServerPool_->setConnectionCallback(std::bind(&HttpServer::__onConnectionBuilt, this, _1));
+    tcpServerPool_->setThreadInitCallback(std::bind(&HttpServer::__onThreadInit, this, _1));
     tcpServerPool_->start();
 }
 
@@ -67,7 +67,7 @@ void HttpServer::__setHandlerCallback()
     handlerList_.emplace_back(std::move(std::make_unique<StaticResourceHandler>()));
     string staticPattern = "^.*\\.(css|js|eot|svg|ttf|woff|woff2|otf|html|htm|mp4|png|jpg|ico)$";
     dispatcher_->registerHandlerCallback(staticPattern, HttpMethod::GET, 
-        std::bind(handlerList_.back()->doGet, handlerList_.back(), _1, _2));
+        std::bind(&StaticResourceHandler::doGet, handlerList_.back(), _1, _2));
     dispatcher_->registerInterceptor(staticPattern, HttpMethod::GET, 
-        std::bind(interceptorList_.back()->doIntercept, interceptorList_.back(), _1, _2));
+        std::bind(&CheckHttpValidInterceptor::doIntercept, interceptorList_.back(), _1, _2));
 }

@@ -74,9 +74,10 @@ namespace HttpVersion
         Version1_1
     };
 
-    bool contain(string & version) 
+    bool contain(string_view version) 
     {
-        if(versionTable_.find(version) != versionTable_.end()) {
+        string tmp(version);
+        if(versionTable_.find(tmp) != versionTable_.end()) {
             return true;
         }
         return false;

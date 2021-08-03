@@ -8,13 +8,13 @@
 TcpServerPool::TcpServerPool(const InetAddress& local, size_t nThread)
         : baseLoop_(new EventLoop()), numThreads_(nThread),
           started_(false), local_(local),
-          threadInitCallback_(defaultThreadInitCallback),
-          connectionCallback_(defaultConnectionCallback),
+          threadInitCallback_(ThreadInitCallback()),
+          connectionCallback_(ConnectionCallback()),
           messageCallback_(MessageCallback())
 {
     // n == 0 || n == 1: all things run in baseLoop thread
     // n > 1: set another (n - 1) eventLoop threads.
-    eventLoops_.resize(n - 1);
+    eventLoops_.resize(numThreads_ - 1);
     LOG_DEBUG("Create TcpServerPool() %s", local.toIpPort().c_str());
 }
 

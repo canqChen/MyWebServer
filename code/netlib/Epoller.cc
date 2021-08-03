@@ -19,7 +19,7 @@ Epoller::~Epoller() {
     ::close(epollfd_);
 }
 
-void Epoller::poll(ChannelList& activeChannels, int timeoutMs = -1) 
+void Epoller::poll(ChannelList& activeChannels, int timeoutMs) 
 {
     loop_->assertInLoopThread();
     int maxEvents = static_cast<int>(events_.size());

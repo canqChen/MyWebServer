@@ -9,7 +9,7 @@ using std::string;
 using std::string_view;
 typedef unsigned char byte;
 
-class URLEncodeUtils {
+struct URLEncodeUtils {
     static byte toHex(byte ch);
     static byte fromHex(byte ch);
     static string decode(string_view str, bool URI = true);

@@ -21,7 +21,7 @@ private:
     void __setHandlerCallback();
 
 private:
-    size_t nLoops_, nWorker;
+    size_t nLoops_, nWorker_;
     std::unique_ptr<TcpServerPool> tcpServerPool_;
     std::unique_ptr<HandlerDispatcher> dispatcher_;
     std::vector<std::unique_ptr<AbstractHandler> > handlerList_;
