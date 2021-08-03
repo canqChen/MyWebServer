@@ -21,7 +21,8 @@ public:
     HandlerCallBack getHandler(string_view uri, string_view method);
     // InterceptorCallBack getInterceptor(const std::string & uri, const std::string &method);
 private:
-    std::unordered_map<std::pair<std::string, std::string>, HandlerChain> handlerChains_;
+
+    std::map<std::pair<std::string, std::string>, HandlerChain> handlerChains_;
 };
 
 #endif

@@ -51,9 +51,9 @@ void HttpServer::__onMessage(TcpConnectionPtr& conn, Buffer& buff)
         resp->sendError(HttpStatus::NotFound404);
     }
     
-    Buffer buff;
-    codec->wrapHttp(resp, buff);
-    conn->send(buff.readPtr(), buff.readableBytes());
+    Buffer respBuff;
+    codec->wrapHttp(resp, respBuff);
+    conn->send(respBuff.readPtr(), respBuff.readableBytes());
 }
 
 void HttpServer::__onThreadInit(size_t index) 
