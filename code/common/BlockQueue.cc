@@ -1,8 +1,10 @@
 #include "BlockQueue.h"
 
+#include <cassert>
+
 template<class T>
 BlockQueue<T>::BlockQueue(size_t MaxCapacity) :capacity_(MaxCapacity) {
-    assert(capacity_ > 0);
+    assert(MaxCapacity > 0);
     isClose_ = false;
 }
 

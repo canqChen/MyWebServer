@@ -10,9 +10,9 @@
 #include <stdarg.h>           // vastart va_end
 #include <assert.h>
 #include <sys/stat.h>         //mkdir
-#include "./BlockQueue.h"
-#include "./Buffer.h"
-#include "./NoCopyable.h"
+#include "common/BlockQueue.h"
+#include "common/Buffer.h"
+#include "common/NoCopyable.h"
 
 enum LogLevel {
     TRACE,
@@ -50,7 +50,7 @@ private:
     void __changeLogFile(struct tm sysTime);
     void __determineLogIdx(struct tm sysTime);
     void __openFile(string fileName);
-    struct tm Log::__getSysTime();
+    struct tm __getSysTime();
 
 private:
     const uint32_t LOG_NAME_LEN;
