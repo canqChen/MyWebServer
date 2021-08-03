@@ -8,7 +8,7 @@
 #include <signal.h>
 #include <numeric>
 
-#include "Epoller.h"
+
 #include "Channel.h"
 
 #include "../common/Log.h"

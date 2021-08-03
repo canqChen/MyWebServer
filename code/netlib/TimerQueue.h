@@ -1,13 +1,14 @@
 #ifndef TIMERQUEUE_H
 #define TIMERQUEUE_H
 
+#include "Channel.h"
+
 #include <memory>
 #include <set>
 
 #include "Timer.h"
 
 class EventLoop;
-class Channel;
 
 
 // 定时器队列，底层rb-tree(set)实现

@@ -91,7 +91,7 @@ string Buffer::retrieveUtil(const char * pos)
 {
     assert(pos >= readPtr());
     assert(pos <= writePtr());
-    string ret = string(readPtr(), pos);
+    string ret = string(static_cast<const char*>(readPtr()), pos);
     return ret;
 }
 

@@ -4,11 +4,11 @@
 #include <mutex>
 #include <atomic>
 
+#include "Epoller.h"
+#include "Channel.h"
 #include "../common/NoCopyable.h"
 #include "TimerQueue.h"
 
-class Channel;
-class EventLoop;
 
 // one loop per thread
 class EventLoop : NoCopyable
