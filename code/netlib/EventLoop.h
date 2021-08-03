@@ -2,11 +2,13 @@
 #define EVENTLOOP_H
 
 #include <mutex>
+#include <atomic>
 
 #include "../common/NoCopyable.h"
 #include "TimerQueue.h"
-#include "Epoller.h"
-#include "Channel.h"
+
+class Channel;
+class EventLoop;
 
 // one loop per thread
 class EventLoop : NoCopyable

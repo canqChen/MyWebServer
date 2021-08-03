@@ -10,7 +10,6 @@
 class Connector: NoCopyable
 {
 public:
-    typedef std::function<void()> EventCallback;
     Connector(EventLoop* loop, const InetAddress& peer);
     ~Connector();
 
@@ -21,7 +20,7 @@ public:
         newConnectionCallback_ = cb; 
     }
 
-    void setErrorCallback(const ErrorCallback& cb)
+    void setErrorCallback(const EventCallback& cb)
     { 
         errorCallback_ = cb; 
     }

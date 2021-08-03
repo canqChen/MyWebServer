@@ -3,7 +3,7 @@
 #include "httpserver/Config.h"
 #include "common/Log.h"
 
-int logLevel;
+LogLevel logLevel;
 
 #ifndef NDEBUG
 logLevel = DEBUG;

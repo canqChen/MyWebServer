@@ -23,7 +23,7 @@ string StringUtils::trim(string_view str)
     if(startIdx == str.npos) {
         return "";
     }
-    return str.substr(startIdx, endIdx - startIdx + 1);
+    return string(str.substr(startIdx, endIdx - startIdx + 1));
 }
 
 // 拼接字符串，以delimiter为分界

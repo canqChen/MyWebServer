@@ -22,6 +22,10 @@ public:
     size_t prependableBytes() const;
 
     const char* readPtr() const;
+    char* readPtr();
+
+    const char* writePtr() const;
+    char* writePtr();
 
     void updateWritePos(size_t len);
 
@@ -36,9 +40,6 @@ public:
     string retrieveAll();
     string retrieve(size_t len);
     string retrieveUtil(const char * pos);
-
-    const char* writePtr() const;
-    char* writePtr();
 
     void append(const std::string& str);
     void append(const char* str, size_t len);

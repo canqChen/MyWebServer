@@ -16,7 +16,7 @@ TcpClient::TcpClient(EventLoop* loop, const InetAddress& peer)
 
 TcpClient::~TcpClient()
 {
-    if (connection_ && !connection_->disconnected())
+    if (connection_ && !connection_->isDisconnected())
         connection_->forceClose();
     if (retryTimer_ != nullptr) {
         loop_->cancelTimer(retryTimer_);

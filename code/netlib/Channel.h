@@ -13,7 +13,6 @@
 // 每个channel对象只属于一个evenloop，且只负责一个fd的io事件分发给不同的回调，管理fd，不拥有fd，fd生命周期与channel无关
 class Channel: NoCopyable {
 public:
-    typedef std::function<void()> EventCallback;
     Channel(EventLoop* loop, int fd);
     ~Channel();
     // 注册可读回调

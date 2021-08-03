@@ -57,7 +57,7 @@ public:
 
     void setContentType(string_view type) 
     {
-        headers_.insert({HttpHeaderName::CONTENT_TYPE, type});
+        headers_.insert({HttpHeaderName::CONTENT_TYPE, string(type)});
     }
 
     void setFileAsContent(string_view fileName)

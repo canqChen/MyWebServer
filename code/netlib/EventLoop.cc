@@ -8,6 +8,9 @@
 #include <signal.h>
 #include <numeric>
 
+#include "Epoller.h"
+#include "Channel.h"
+
 #include "../common/Log.h"
 
 // __thread声明每个线程独立变量

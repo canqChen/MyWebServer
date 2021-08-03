@@ -9,7 +9,9 @@
 #include <errno.h>
 
 #include "../common/NoCopyable.h"
-#include "EventLoop.h"
+
+class Channel;
+class EventLoop;
 
 class Epoller : NoCopyable {
 public:

@@ -5,7 +5,7 @@
 #include <unordered_set>
 #include <string>
 
-#include "../Config.h
+#include "../Config.h"
 
 using std::string;
 using std::string_view;
@@ -25,9 +25,10 @@ namespace HttpMethod
         GET, POST
     };
     
-    bool contain(string & method) 
+    bool contain(string_view method) 
     {
-        if(methodTable_.find(method) != methodTable_.end()) {
+        string tmp(method);
+        if(methodTable_.find(tmp) != methodTable_.end()) {
             return true;
         }
         return false;

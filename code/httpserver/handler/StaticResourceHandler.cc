@@ -8,7 +8,7 @@
 void StaticResourceHandler::doGet(const HttpRequestPtr &req, HttpResponsePtr & resp) 
 {
     string path = Config::CONTEXT_PATH + req->getRequestURI();
-    if(access(path, F_OK | R_OK) == 0) {
+    if(access(path.c_str(), F_OK | R_OK) == 0) {
         resp->setFileAsContent(req->getRequestURI());
     }
     else {

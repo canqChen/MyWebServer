@@ -63,3 +63,5 @@ private:
     bool repeat_;   // 是否重新触发
     bool canceled_; // 取消定时
 };
+
+#endif

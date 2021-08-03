@@ -24,7 +24,7 @@ public:
     { 
         writeCompleteCallback_ = cb;
     }
-    void setErrorCallback(const ErrorCallback& cb)
+    void setErrorCallback(const EventCallback& cb)
     {
         connector_->setErrorCallback(cb); 
     }

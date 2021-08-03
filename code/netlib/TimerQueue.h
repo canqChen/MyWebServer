@@ -5,7 +5,9 @@
 #include <set>
 
 #include "Timer.h"
-#include "Channel.h"
+
+class EventLoop;
+class Channel;
 
 
 // 定时器队列，底层rb-tree(set)实现
