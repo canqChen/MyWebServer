@@ -3,13 +3,11 @@
 
 #include <any>
 
-#include "common/NoCopyable.h"
-#include "common/Buffer.h"
-#include "netlib/Callbacks.h"
-#include "netlib/Channel.h"
-#include "netlib/InetAddress.h"
-
-class EventLoop;
+#include "../common/NoCopyable.h"
+#include "Buffer.h"
+#include "Callbacks.h"
+#include "Channel.h"
+#include "InetAddress.h"
 
 // ont object for each tcp connection
 class TcpConnection: NoCopyable, public std::enable_shared_from_this<TcpConnection> 

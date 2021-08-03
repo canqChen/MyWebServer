@@ -1,8 +1,8 @@
-#include "netlib/TcpServer.h"
-#include "common/Log.h"
-#include "netlib/TcpConnection.h"
-#include "netlib/EventLoop.h"
-#include "common/Buffer.h"
+#include "TcpServer.h"
+#include "../common/Log.h"
+#include "TcpConnection.h"
+#include "EventLoop.h"
+#include "../common/Buffer.h"
 
 
 TcpServer::TcpServer(EventLoop* loop, const InetAddress& local)

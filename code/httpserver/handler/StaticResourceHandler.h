@@ -1,7 +1,7 @@
 #ifndef STATICRESOURCEHANDLER_H
 #define STATICRESOURCEHANDLER_H
 
-#include "httpserver/handler/AbstractHandler.h"
+#include "../handler/AbstractHandler.h"
 
 class StaticResourceHandler : public AbstractHandler
 {

@@ -7,12 +7,12 @@
 #include <sys/types.h>
 #include <sys/mman.h>    // mmap, munmap
 
-#include "httpserver/utils/StringUtils.h"
-#include "httpserver/http/HttpUtils.h"
-#include "common/Buffer.h"
-#include "common/Log.h"
-#include "httpserver/utils/URLEncodeUtil.h"
-#include "httpserver/http/HttpRequest.h"
+#include "../utils/StringUtils.h"
+#include "../http/HttpUtils.h"
+#include "../../common/Buffer.h"
+#include "../../common/Log.h"
+#include "../utils/URLEncodeUtil.h"
+#include "../http/HttpRequest.h"
 
 using std::smatch;
 using std::regex;

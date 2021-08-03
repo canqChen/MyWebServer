@@ -1,5 +1,5 @@
-#include "netlib/Socket.h"
-#include "common/Log.h"
+#include "Socket.h"
+#include "../common/Log.h"
 
 int Socket::createSocket() {
     int ret = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0);

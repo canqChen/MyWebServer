@@ -1,11 +1,11 @@
-#include "netlib/Epoller.h"
+#include "Epoller.h"
 
 #include <unistd.h>
 #include <cassert>
 
-#include "common/Log.h"
-#include "netlib/EventLoop.h"
-#include "netlib/Channel.h"
+#include "../common/Log.h"
+#include "EventLoop.h"
+#include "Channel.h"
 
 Epoller::Epoller(EventLoop* loop)
         :loop_(loop),

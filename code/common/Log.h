@@ -10,9 +10,9 @@
 #include <stdarg.h>           // vastart va_end
 #include <assert.h>
 #include <sys/stat.h>         //mkdir
-#include "common/BlockQueue.h"
-#include "common/Buffer.h"
-#include "common/NoCopyable.h"
+#include "BlockQueue.h"
+#include "Buffer.h"
+#include "NoCopyable.h"
 
 enum LogLevel {
     TRACE,

@@ -5,8 +5,8 @@
 #include <unordered_map>
 #include <string>
 
-#include "httpserver/http/HttpUtils.h"
-#include "httpserver/http/Cookie.h"
+#include "HttpUtils.h"
+#include "Cookie.h"
 
 using std::string;
 using std::string_view;

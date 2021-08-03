@@ -5,8 +5,8 @@
 #include<unordered_map>
 #include<memory>
 
-#include "httpserver/HttpCallbacks.h"
-#include "httpserver/handler/HandlerChain.h"
+#include "../HttpCallbacks.h"
+#include "../handler/HandlerChain.h"
 
 using std::string_view;
 class HandlerDispatcher: NoCopyable

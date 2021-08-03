@@ -1,7 +1,7 @@
 #ifndef HTTPSERVER_H
 #define HTTPSERVER_H
 
-#include "netlib/TcpServerPool.h"
+#include "../netlib/TcpServerPool.h"
 
 class HttpServer: NoCopyable
 {

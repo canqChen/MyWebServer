@@ -1,5 +1,5 @@
-#include "httpserver/interceptor/CheckHttpValidInterceptor.h"
-#include "httpserver/http/HttpUtils.h"
+#include "../interceptor/CheckHttpValidInterceptor.h"
+#include "../http/HttpUtils.h"
 
 bool CheckHttpValidInterceptor::doIntercept(const HttpRequestPtr &req, HttpResponsePtr&resp)
 {

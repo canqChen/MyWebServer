@@ -1,7 +1,7 @@
-#include "netlib/TcpServerPool.h"
-#include "common/Log.h"
-#include "netlib/TcpConnection.h"
-#include "netlib/EventLoop.h"
+#include "TcpServerPool.h"
+#include "../common/Log.h"
+#include "TcpConnection.h"
+#include "EventLoop.h"
 
 
 // set upper-level logic callback while construct tcp server

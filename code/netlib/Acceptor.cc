@@ -1,11 +1,11 @@
-#include "netlib/Acceptor.h"
+#include "Acceptor.h"
 
 #include <unistd.h>
 #include <cassert>
 
-#include "netlib/EventLoop.h"
-#include "common/Log.h"
-#include "netlib/Socket.h"
+#include "EventLoop.h"
+#include "../common/Log.h"
+#include "Socket.h"
 
 
 Acceptor::Acceptor(EventLoop* loop, const InetAddress& local, bool isLinger = false)

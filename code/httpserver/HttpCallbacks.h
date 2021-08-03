@@ -4,9 +4,9 @@
 #include <memory>
 #include <functional>
 
-#include "netlib/TcpConnection.h"
-#include "httpserver/http/HttpRequest.h"
-#include "httpserver/http/HttpResponse.h"
+#include "../netlib/TcpConnection.h"
+#include "http/HttpRequest.h"
+#include "http/HttpResponse.h"
 
 using namespace std::string_view_literals;
 

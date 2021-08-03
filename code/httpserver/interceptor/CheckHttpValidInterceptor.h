@@ -1,7 +1,7 @@
 #ifndef CHECKHTTPVALIDINTERCEPTOR_H
 #define CHECKHTTPVALIDINTERCEPTOR_H
 
-#include "httpserver/interceptor/AbstractInterceptor.h"
+#include "AbstractInterceptor.h"
 
 class CheckHttpValidInterceptor: public AbstractInterceptor
 {

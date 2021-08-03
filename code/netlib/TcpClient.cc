@@ -1,7 +1,7 @@
-#include "netlib/TcpClient.h"
-#include "common/Log.h"
-#include "netlib/EventLoop.h"
-#include "netlib/TcpConnection.h"
+#include "TcpClient.h"
+#include "../common/Log.h"
+#include "EventLoop.h"
+#include "TcpConnection.h"
 
 
 TcpClient::TcpClient(EventLoop* loop, const InetAddress& peer)

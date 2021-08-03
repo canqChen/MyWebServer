@@ -4,8 +4,8 @@
 #include <memory>
 #include <set>
 
-#include "netlib/Timer.h"
-#include "netlib/Channel.h"
+#include "Timer.h"
+#include "Channel.h"
 
 
 // 定时器队列，底层rb-tree(set)实现

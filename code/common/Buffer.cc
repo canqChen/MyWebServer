@@ -1,4 +1,4 @@
-#include "common/Buffer.h"
+#include "Buffer.h"
 
 Buffer::Buffer(size_t initBuffSize, size_t headerSize) 
     : headerSize_(headerSize), buff_(initBuffSize + headerSize), 

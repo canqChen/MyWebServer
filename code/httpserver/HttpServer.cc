@@ -1,10 +1,10 @@
-#include "httpserver/HttpServer.h"
+#include "HttpServer.h"
 
-#include "common/Log.h"
-#include "httpserver/http/HttpCodec.h"
-#include "httpserver/dispatcher/HandlerDispatcher.h"
-#include "httpserver/handler/StaticResourceHandler.h"
-#include "httpserver/interceptor/CheckHttpValidInterceptor.h"
+#include "../../common/Log.h"
+#include "http/HttpCodec.h"
+#include "dispatcher/HandlerDispatcher.h"
+#include "handler/StaticResourceHandler.h"
+#include "interceptor/CheckHttpValidInterceptor.h"
 
 HttpServer::HttpServer(const InetAddress& local, size_t nLoops, size_t nWorker) 
     : nLoops_(nLoops), nWorker_(nWorker), dispatcher_(new HandlerDispatcher()),

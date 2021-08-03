@@ -1,5 +1,5 @@
-#include "httpserver/http/HttpResponse.h"
-#include "httpserver/Config.h"
+#include "HttpResponse.h"
+#include "../Config.h"
 
 HttpResponse::HttpResponse()
     : statusCode_(HttpStatus::OK200), fileName_(""), 

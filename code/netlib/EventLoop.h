@@ -1,10 +1,10 @@
 #ifndef EVENTLOOP_H
 #define EVENTLOOP_H
 
-#include "common/NoCopyable.h"
-#include "netlib/Timer.h"
-#include "netlib/Epoller.h"
-#include "netlib/Channel.h"
+#include "../common/NoCopyable.h"
+#include "Timer.h"
+#include "Epoller.h"
+#include "Channel.h"
 
 // one loop per thread
 class EventLoop : NoCopyable

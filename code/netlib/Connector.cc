@@ -1,12 +1,12 @@
-#include "netlib/Connector.h"
+#include "Connector.h"
 
 #include <unistd.h>
 #include <sys/socket.h>
 #include <cassert>
 
-#include "netlib/EventLoop.h"
-#include "common/Log.h"
-#include "netlib/Socket.h"
+#include "EventLoop.h"
+#include "../common/Log.h"
+#include "Socket.h"
 
 
 Connector::Connector(EventLoop* loop, const InetAddress& peer)

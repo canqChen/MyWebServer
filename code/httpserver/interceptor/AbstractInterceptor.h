@@ -1,7 +1,7 @@
 #ifndef ABSTRACTINTERCEPTOR_H
 #define ABSTRACTINTERCEPTOR_H
 
-#include "httpserver/HttpCallbacks.h"
+#include "../HttpCallbacks.h"
 
 class AbstractInterceptor
 {

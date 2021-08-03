@@ -1,5 +1,5 @@
 
-#include "common/Log.h"
+#include "Log.h"
 
 using namespace std;
 

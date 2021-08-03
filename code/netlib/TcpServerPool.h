@@ -7,10 +7,10 @@
 #include <atomic>
 #include <condition_variable>
 
-#include "netlib/TcpServer.h"
-#include "netlib/InetAddress.h"
-#include "netlib/Callbacks.h"
-#include "common/NoCopyable.h"
+#include "TcpServer.h"
+#include "InetAddress.h"
+#include "Callbacks.h"
+#include "../common/NoCopyable.h"
 
 class EventLoop;
 

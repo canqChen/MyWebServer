@@ -1,4 +1,4 @@
-#include "netlib/Channel.h"
+#include "Channel.h"
 
 #include <cassert>
 
