@@ -17,6 +17,8 @@
 using std::smatch;
 using std::regex;
 
+std::unordered_map<string, std::pair<char *, struct stat> > HttpCodec::cache_;
+
 HttpRequestPtr HttpCodec::parseHttp(Buffer & buff) 
 {
     HttpRequestPtr req = std::make_unique<HttpRequest>();

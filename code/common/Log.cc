@@ -38,8 +38,7 @@ void Log::init(LogLevel level = INFO, const char *path, const char *suffix) {
     level_ = level;
 
     if (!blockQueue_) {
-        unique_ptr<BlockQueue<std::string> > newQueue(new BlockQueue<std::string>);
-        blockQueue_ = std::move(newQueue);
+        blockQueue_.reset(new BlockQueue<std::string>());
 
         std::unique_ptr<std::thread> NewThread(new thread(__flushLogThread)); // 创建线程异步写日志
         writeThread_ = std::move(NewThread);

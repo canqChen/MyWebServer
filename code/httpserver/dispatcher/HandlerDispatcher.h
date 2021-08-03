@@ -13,8 +13,8 @@ class HandlerDispatcher: NoCopyable
 {
 public:
     // static HandlerDispatcher* getInstance();
-    HandlerDispatcher();
-    ~HandlerDispatcher();
+    HandlerDispatcher() = default;
+    ~HandlerDispatcher() = default;
 
     void registerHandlerCallback(string_view uri, string_view method, HandlerCallBack handler);
     void registerInterceptor(string_view uri, string_view method, InterceptorCallBack interceptor);

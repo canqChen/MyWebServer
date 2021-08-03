@@ -47,6 +47,4 @@ private:
     static std::unordered_map<string, std::pair<char *, struct stat> > cache_; // munmap(ptr, size);
 };
 
-std::unordered_map<string, std::pair<char *, struct stat> > HttpCodec::cache_;
-
 #endif
