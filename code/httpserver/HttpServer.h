@@ -24,8 +24,8 @@ private:
     size_t nLoops_, nWorker_;
     std::unique_ptr<TcpServerPool> tcpServerPool_;
     std::unique_ptr<HandlerDispatcher> dispatcher_;
-    std::vector<std::unique_ptr<AbstractHandler> > handlerList_;
-    std::vector<std::unique_ptr<AbstractInterceptor> > interceptorList_;
+    std::vector<AbstractHandler*> handlerList_;
+    std::vector<AbstractInterceptor*> interceptorList_;
 };
 
 #endif

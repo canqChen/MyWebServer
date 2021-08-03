@@ -55,7 +55,7 @@ void TimerQueue::__handleEventFdRead() {
 
     TimerFdUtils::timerfdRead(timerfd_);
 
-    Timestamp now(clock::now());
+    Timestamp now(GetTimestamp::now());
     for (auto& e: __getExpired(now)) {
         Timer* timer = e.second;
         assert(timer->isExpired(now));

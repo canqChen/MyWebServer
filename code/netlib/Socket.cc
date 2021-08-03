@@ -4,7 +4,7 @@
 int Socket::createSocket() {
     int ret = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0);
     if (ret == -1) {
-        close(fd);
+        // close(fd);
         LOG_FATAL("Create socket fail in %s", "Socket::createSocket() !");
     }
     return ret;

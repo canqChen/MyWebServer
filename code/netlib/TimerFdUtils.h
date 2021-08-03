@@ -13,16 +13,7 @@ struct TimerFdUtils {
     // timerfd可读回调
     static void timerfdRead(int fd);
 
-    static struct timespec durationFromNow(Timestamp when) {
-        struct timespec ret;
-        Nanosecond ns = when - clock::now();
-        if (ns < 1ms) 
-            ns = 1ms;
-
-        ret.tv_sec = static_cast<time_t>(ns.count() / std::nano::den);
-        ret.tv_nsec = ns.count() % std::nano::den;
-        return ret;
-    }
+    static struct timespec durationFromNow(Timestamp when);
 
     // 设置定时器超时时间，使when时间后唤醒epoller处理定时任务
     static void timerfdSet(int fd, Timestamp when);

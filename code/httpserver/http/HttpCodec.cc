@@ -55,7 +55,7 @@ bool HttpCodec::__parseRequest(Buffer& buff, HttpRequestPtr& req)
         // end of the request line and header
         else if(buff.findCRLF() == buff.readPtr()) {
             buff.updateReadPos(lineEnd + 2);
-            size_t len = req.getContentLength();
+            size_t len = req->getContentLength();
             // get request
             if(len == 0) {
                 return true;
@@ -101,7 +101,7 @@ bool HttpCodec::__parseRequest(Buffer& buff, HttpRequestPtr& req)
         }
     }
     LOG_DEBUG("[%s], [%s], [%s]", req->requestMethod_.c_str(), \ 
-            req->requestURI_.c_str(), req->requestBody_.c_str());
+            req->URI_.c_str(), req->requestBody_.c_str());
     return true;
 }
 

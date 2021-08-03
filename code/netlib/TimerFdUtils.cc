@@ -22,7 +22,7 @@ void TimerFdUtils::timerfdRead(int fd) {
 
 struct timespec TimerFdUtils::durationFromNow(Timestamp when) {
     struct timespec ret;
-    Nanosecond ns = when - clock::now();
+    Nanosecond ns = when - GetTimestamp::now();
     if (ns < 1ms) 
         ns = 1ms;
 

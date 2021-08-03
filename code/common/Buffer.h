@@ -14,7 +14,8 @@ using std::string;
 
 class Buffer {
 public:
-    Buffer(size_t initBuffSize = 1024, size_t headerSize = 8);
+    Buffer();
+    Buffer(size_t initBuffSize, size_t headerSize);
     ~Buffer() = default;
 
     size_t writableBytes() const;  

@@ -1,5 +1,11 @@
 #include "Buffer.h"
 
+Buffer::Buffer() 
+    : headerSize_(8), buff_(1024 + 8), 
+      readIdx_(8), writeIdx_(8) 
+{
+}
+
 Buffer::Buffer(size_t initBuffSize, size_t headerSize) 
     : headerSize_(headerSize), buff_(initBuffSize + headerSize), 
       readIdx_(headerSize_), writeIdx_(headerSize_) 

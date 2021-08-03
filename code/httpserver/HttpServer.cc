@@ -62,12 +62,12 @@ void HttpServer::__onConnectionBuilt(const TcpConnectionPtr& conn)
 void HttpServer::__setHandlerCallback() 
 {
     // interceptor
-    interceptorList_.emplace_back(std::move(std::make_unique<CheckHttpValidInterceptor>()));
+    interceptorList_.emplace_back(new CheckHttpValidInterceptor());
     // static resource request
-    handlerList_.emplace_back(std::move(std::make_unique<StaticResourceHandler>()));
+    handlerList_.emplace_back(new StaticResourceHandler());
     string staticPattern = "^.*\\.(css|js|eot|svg|ttf|woff|woff2|otf|html|htm|mp4|png|jpg|ico)$";
     dispatcher_->registerHandlerCallback(staticPattern, HttpMethod::GET, 
-        std::bind(&StaticResourceHandler::doGet, handlerList_.back(), _1, _2));
+        [ptr = handlerList_.back()](const HttpRequestPtr &req, HttpResponsePtr & resp) {ptr->doGet(req, resp);});
     dispatcher_->registerInterceptor(staticPattern, HttpMethod::GET, 
-        std::bind(&CheckHttpValidInterceptor::doIntercept, interceptorList_.back(), _1, _2));
+        [ptr = interceptorList_.back()](const HttpRequestPtr &req, HttpResponsePtr & resp) {ptr->doIntercept(req, resp);});
 }
