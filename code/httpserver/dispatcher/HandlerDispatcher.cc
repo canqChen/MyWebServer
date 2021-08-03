@@ -1,6 +1,5 @@
-#include "./HandlerDispatcher.h"
 #include <regex>
-
+#include "httpserver/dispatcher/HandlerDispatcher.h"
 
 
 void HandlerDispatcher::registerHandlerCallback(string_view uri, 
@@ -9,16 +8,16 @@ void HandlerDispatcher::registerHandlerCallback(string_view uri,
     string uriStr(uri);
     string methodStr(method);
     std::pair<string, string> key(uriStr, methodStr);
-    handlerChains_[key].addHandler(std::forward<HandlerChain>(handler));
+    handlerChains_[key].addHandler(std::forward<HandlerCallBack>(handler));
 }
 
 void HandlerDispatcher::registerInterceptor(string_view uri, 
-    string_view method, InterceptorCallBack && InterceptorCallBack)
+    string_view method, InterceptorCallBack && interceptor)
 {
     string uriStr(uri);
     string methodStr(method);
     std::pair<string, string> key(uriStr, methodStr);
-    handlerChains_[key].addInterceptor(std::forward<HandlerChain>(handler));
+    handlerChains_[key].addInterceptor(std::forward<InterceptorCallBack>(interceptor));
 }
 
 HandlerCallBack HandlerDispatcher::getHandler(string_view uri, string_view method)

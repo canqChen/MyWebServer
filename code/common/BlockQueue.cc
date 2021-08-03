@@ -2,7 +2,7 @@
 
 template<class T>
 BlockQueue<T>::BlockQueue(size_t MaxCapacity) :capacity_(MaxCapacity) {
-    assert(MaxCapacity > 0);
+    assert(capacity_ > 0);
     isClose_ = false;
 }
 
@@ -37,7 +37,7 @@ void BlockQueue<T>::flushAll(FILE * fp) {
     while(!queue_.empty()) {
         T str = queue_.front();
         queue_.pop();
-        fputs(str.c_str(), fp_);
+        fputs(str.c_str(), fp);
     }
 }
 
@@ -115,7 +115,7 @@ bool BlockQueue<T>::pop(T &item, int timeout) {
                 == std::cv_status::timeout){
             return false;
         }
-        if(mClose) {
+        if(isClose_) {
             return false;
         }
     }

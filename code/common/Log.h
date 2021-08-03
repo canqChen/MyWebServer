@@ -11,7 +11,7 @@
 #include <assert.h>
 #include <sys/stat.h>         //mkdir
 #include "./BlockQueue.h"
-#include "net/buffer/Buffer.h"
+#include "./Buffer.h"
 #include "./NoCopyable.h"
 
 enum LogLevel {

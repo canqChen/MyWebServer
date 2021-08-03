@@ -1,9 +1,9 @@
 #ifndef HTTPCODEC_H
 #define HTTPCODEC_H
 
-#include "./HttpResponse.h"
-#include "./HttpRequest.h"
-#include "../HttpCallbacks.h"
+#include "httpserver/http/HttpResponse.h"
+#include "httpserver/http/HttpRequest.h"
+#include "httpserver/HttpCallbacks.h"
 
 class HttpCodec: NoCopyable
 {

@@ -2,10 +2,10 @@
 #define ACCEPTOR_H
 
 
-#include "../common/NoCopyable.h"
-#include "./Callbacks.h"
-#include "./Channel.h"
-#include "./InetAddress.h"
+#include "common/NoCopyable.h"
+#include "netlib/Callbacks.h"
+#include "netlib/Channel.h"
+#include "netlib/InetAddress.h"
 
 class EventLoop;
 

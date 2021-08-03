@@ -3,9 +3,9 @@
 
 #include <cassert>
 
-#include "./Callbacks.h"
-#include "./Timestamp.h"
-#include "../common/NoCopyable.h"
+#include "netlib/Callbacks.h"
+#include "netlib/Timestamp.h"
+#include "common/NoCopyable.h"
 
 // 定时器类
 class Timer: NoCopyable {

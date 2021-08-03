@@ -6,9 +6,8 @@
 #include <signal.h>
 #include <numeric>
 
-#include "../common/Log.h"
-#include "./Channel.h"
-#include "./EventLoop.h"
+#include "common/Log.h"
+#include "netlib/EventLoop.h"
 
 // __thread声明每个线程独立变量
 __thread EventLoop* t_Eventloop = nullptr;

@@ -3,11 +3,11 @@
 
 #include <any>
 
-#include "../common/NoCopyable.h"
-#include "../common/Buffer.h"
-#include "./Callbacks.h"
-#include "./Channel.h"
-#include "./InetAddress.h"
+#include "common/NoCopyable.h"
+#include "common/Buffer.h"
+#include "netlib/Callbacks.h"
+#include "netlib/Channel.h"
+#include "netlib/InetAddress.h"
 
 class EventLoop;
 

@@ -4,10 +4,10 @@
 
 #include <map>
 
-#include "../../common/Log.h"
-#include "./HttpUtils.h"
-#include "./Cookie.h"
-#include "../../common/Buffer.h"
+#include "common/Log.h"
+#include "httpserver/http/HttpUtils.h"
+#include "httpserver/http/Cookie.h"
+#include "common/Buffer.h"
 
 using std::string;
 using std::string_view;

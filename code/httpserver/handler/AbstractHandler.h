@@ -1,7 +1,7 @@
 #ifndef ABSTRACTHANDLER_H
 #define ABSTRACTHANDLER_H
 
-#include "../HttpCallbacks.h"
+#include "httpserver/HttpCallbacks.h"
 
 class AbstractHandler
 {

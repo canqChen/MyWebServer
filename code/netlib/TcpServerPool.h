@@ -7,15 +7,12 @@
 #include <atomic>
 #include <condition_variable>
 
-#include "TcpServerSingle.h"
-#include "./InetAddress.h"
-#include "./Callbacks.h"
-#include "../common/NoCopyable.h"
+#include "netlib/TcpServer.h"
+#include "netlib/InetAddress.h"
+#include "netlib/Callbacks.h"
+#include "common/NoCopyable.h"
 
-class EventLoopThread;
-class TcpServer;
 class EventLoop;
-class InetAddress;
 
 // create multiple sub server, one loop in each sub server
 class TcpServerPool: NoCopyable

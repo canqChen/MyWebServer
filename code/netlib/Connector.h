@@ -3,9 +3,9 @@
 
 #include <functional>
 
-#include "./InetAddress.h"
-#include "./Channel.h"
-#include "../common/NoCopyable.h"
+#include "netlib/InetAddress.h"
+#include "netlib/Channel.h"
+#include "common/NoCopyable.h"
 
 class EventLoop;
 class InetAddress;

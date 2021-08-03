@@ -1,8 +1,7 @@
-#include "../common/Log.h"
-#include "./TcpConnection.h"
-
-#include "./EventLoop.h"
-#include "./TcpServerPool.h"
+#include "common/Log.h"
+#include "netlib/TcpConnection.h"
+#include "netlib/EventLoop.h"
+#include "netlib/TcpServerPool.h"
 
 // set upper-level logic callback while construct tcp server
 TcpServerPool::TcpServerPool(const InetAddress& local, size_t nThread)

@@ -1,12 +1,8 @@
-//
-// Created by frank on 17-9-1.
-//
-
 #include <arpa/inet.h>
 #include <strings.h>
 
-#include "../common/Log.h"
-#include "./InetAddress.h"
+#include "common/Log.h"
+#include "netlib/InetAddress.h"
 
 
 InetAddress::InetAddress(uint16_t port, bool loopback) {

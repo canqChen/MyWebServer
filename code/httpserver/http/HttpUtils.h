@@ -5,9 +5,10 @@
 #include <unordered_set>
 #include <string>
 
-#include "../Config.h
+#include "httpserver/Config.h
 
 using std::string;
+using std::string_view;
 using std::unordered_map;
 using std::unordered_set;
 
@@ -90,16 +91,16 @@ namespace HttpHeaderName
     const string REFRER = "Referer";
     const string HOST = "Host";
     const string LOCATION  = "Location";
-    const string SERVER = "Server"
+    const string SERVER = "Server";
 }
 
 namespace MIME 
 {
-    const string JSON = "application/json;charset=UTF-8";
+    const string JSON = "application/json; charset=UTF-8";
     const string MULTIPART_FORM_DATA = "multipart/form-data";
     const string WWW_FORM_URLENCODED = "application/x-www-form-urlencoded";
-    const string HTML = "text/html;charset=UTF-8";
-    const string TXT = "text/plain;charset=UTF-8";
+    const string HTML = "text/html; charset=UTF-8";
+    const string TXT = "text/plain; charset=UTF-8";
     const string JPG = "image/jpeg";
     const string PNG = "image/png";
     const string MPEG = "video/mpeg";
@@ -124,13 +125,13 @@ namespace MIME
         {".xml", XML}
     };
 
-    string getContentTypeBySuffix(std::string_view suffix) 
+    string getContentTypeBySuffix(string_view suffix) 
     {
         string suf = string(suffix);
         if(SUFFIX2TYPE_.find(suf) != SUFFIX2TYPE_.end()) {
             return SUFFIX2TYPE_[suf];
         }
-        return "text/plain;charset=UTF-8";
+        return TXT;
     }
 }
 

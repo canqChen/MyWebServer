@@ -1,10 +1,10 @@
 #include "Buffer.h"
 
-Buffer::Buffer(size_t initBuffSize = 1024, size_t headerSize = 8) 
-    : buff_(initBuffSize + headerSize), headerSize_(headerSize), 
+Buffer::Buffer(size_t initBuffSize, size_t headerSize) 
+    : headerSize_(headerSize), buff_(initBuffSize + headerSize), 
       readIdx_(headerSize_), writeIdx_(headerSize_) 
 {
-    assert(initBuffSize > 0 && headerSize_ > 0)
+    assert(initBuffSize > 0 && headerSize_ > 0);
 }
 
 // __buffer中可被读出字节数
@@ -27,6 +27,11 @@ size_t Buffer::prependableBytes() const
 
 // 返回可读出起始位置的指针
 const char* Buffer::readPtr() const 
+{
+    return __beginPtr() + readIdx_;
+}
+
+char* Buffer::readPtr() 
 {
     return __beginPtr() + readIdx_;
 }

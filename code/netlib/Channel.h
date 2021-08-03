@@ -5,32 +5,37 @@
 #include <memory>
 #include <sys/epoll.h>
 
-#include "../common/NoCopyable.h"
-#include "./Callbacks.h"
+#include "common/NoCopyable.h"
+#include "netlib/Callbacks.h"
+#include "netlib/EventLoop.h"
 
-class EventLoop;
 
 // 每个channel对象只属于一个evenloop，且只负责一个fd的io事件分发给不同的回调，管理fd，不拥有fd，fd生命周期与channel无关
 class Channel: NoCopyable {
 public:
+    typedef std::function<void()> EventCallback;
     Channel(EventLoop* loop, int fd);
     ~Channel();
     // 注册可读回调
-    void setReadCallback(const ReadCallback& cb) { 
+    void setReadCallback(const EventCallback& cb) 
+    { 
         readCallback_ = cb;
     }
 
     // 注册可写回调
-    void setWriteCallback(const WriteCallback& cb) { 
+    void setWriteCallback(const EventCallback& cb) 
+    { 
         writeCallback_ = cb; 
     }
 
     // 注册关闭fd回调
-    void setCloseCallback(const CloseCallback& cb) { 
+    void setCloseCallback(const EventCallback& cb) 
+    { 
         closeCallback_ = cb; 
     }
     // 注册出错时回调
-    void setErrorCallback(const ErrorCallback& cb) { 
+    void setErrorCallback(const EventCallback& cb) 
+    { 
         errorCallback_ = cb; 
     }
     // 根据就绪事件分发给对应回调函数处理
@@ -41,15 +46,18 @@ public:
     }
 
     // fd事件为空
-    bool isNoneEvents() const { 
+    bool isNoneEvents() const 
+    { 
         return events_ == 0; 
     }
     // fd事件列表
-    unsigned getEvents() const { 
+    unsigned getEvents() const 
+    { 
         return events_; 
     }
 
-    void setRealEvents(unsigned revents) { 
+    void setRealEvents(unsigned revents) 
+    { 
         revents_ = revents; 
     }
 
@@ -121,10 +129,11 @@ private:
     // 是否正在处理io事件中
     bool handlingEvents_;
 
-    ReadCallback readCallback_;
-    WriteCallback writeCallback_;
-    CloseCallback closeCallback_;
-    ErrorCallback errorCallback_;
+
+    EventCallback readCallback_;
+    EventCallback writeCallback_;
+    EventCallback closeCallback_;
+    EventCallback errorCallback_;
 };
 
 

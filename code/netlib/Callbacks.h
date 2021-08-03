@@ -24,11 +24,6 @@ typedef std::function<void(const TcpConnectionPtr&)> WriteCompleteCallback;
 typedef std::function<void(const TcpConnectionPtr&, size_t)> HighWaterMarkCallback;
 typedef std::function<void(TcpConnectionPtr&, Buffer&)> MessageCallback;
 
-// channel callback definition
-typedef std::function<void()> ErrorCallback;
-typedef std::function<void()> ReadCallback;
-typedef std::function<void()> WriteCallback;
-typedef std::function<void()> CloseCallback;
 
 typedef std::function<void(int sockfd,
                            const InetAddress& local,

@@ -1,8 +1,8 @@
-#include "./StaticResourceHandler.h"
-#include "../http/HttpRequest.h"
-#include "../http/HttpResponse.h"
-#include "../Config.h"
 #include <unistd.h>
+#include "httpserver/http/HttpRequest.h"
+#include "httpserver/http/HttpResponse.h"
+#include "httpserver/handler/StaticResourceHandler.h"
+#include "httpserver/Config.h"
 
 
 void StaticResourceHandler::doGet(const HttpRequestPtr &req, HttpResponsePtr & resp) 

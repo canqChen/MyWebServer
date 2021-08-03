@@ -1,11 +1,5 @@
-//
-// Created by frank on 17-8-31.
-//
-
 #include <cassert>
-
-#include "../eventloop/EventLoop.h"
-#include "Channel.h"
+#include "netlib/Channel.h"
 
 
 Channel::Channel(EventLoop* loop, int fd)

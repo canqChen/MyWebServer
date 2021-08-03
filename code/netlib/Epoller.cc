@@ -3,10 +3,10 @@
 #include <unistd.h>
 #include <cassert>
 
-#include "../common/Log.h"
-#include "./EventLoop.h"
-#include "./Epoller.h"
-#include "./Channel.h"
+#include "common/Log.h"
+#include "netlib/EventLoop.h"
+#include "netlib/Epoller.h"
+#include "netlib/Channel.h"
 
 Epoller::Epoller(EventLoop* loop)
         :loop_(loop),

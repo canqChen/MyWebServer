@@ -1,7 +1,7 @@
-# include"Cookie.h"
+# include "httpserver/http/Cookie.h"
 
-Cookie::Cookie(string_view name, string_view value, string_view domain="", string_view path="/", 
-    long maxAge=-1, bool httpOnly=true, bool secure=false): name_(name), value_(value),
+Cookie::Cookie(string_view name, string_view value, string_view domain, string_view path, 
+    long maxAge, bool httpOnly, bool secure): name_(name), value_(value),
     domain_(domain), path_(path), maxAge_(maxAge), httpOnly_(httpOnly), secure_(secure)
     {}
 

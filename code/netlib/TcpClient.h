@@ -1,9 +1,9 @@
 #ifndef TCPCLIENT_H
 #define TCPCLIENT_H
 
-#include "./Callbacks.h"
-#include "./Connector.h"
-#include "./Timer.h"
+#include "netlib/Callbacks.h"
+#include "netlib/Connector.h"
+#include "netlib/Timer.h"
 
 class TcpClient: NoCopyable
 {

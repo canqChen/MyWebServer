@@ -1,8 +1,8 @@
 #include<regex> 
-#include "StringUtils.h"
+#include "httpserver/utils/StringUtils.h"
 
 
-bool StringUtils::isEmpty(const string &str) 
+bool StringUtils::isEmpty(string_view str) 
 {
     if(str.empty())
         return true;
@@ -15,7 +15,7 @@ bool StringUtils::isEmpty(const string &str)
 }
 
 // 去除字符串两边空格
-string StringUtils::trim(const string & str) 
+string StringUtils::trim(string_view str) 
 {
     string whiteSpaces(" \t\f\v\n\r");
     auto startIdx = str.find_first_not_of(whiteSpaces);

@@ -9,7 +9,8 @@ using std::string;
 using std::vector;
 using std::string_view;
 
-class StringUtils {
+class StringUtils 
+{
 public:
     static bool isEmpty(string_view str);
     static string trim(string_view str);

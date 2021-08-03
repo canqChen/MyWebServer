@@ -4,7 +4,9 @@
 #include <memory>
 #include <functional>
 
-#include "../netlib/TcpConnection.h"
+#include "netlib/TcpConnection.h"
+#include "httpserver/http/HttpRequest.h"
+#include "httpserver/http/HttpResponse.h"
 
 using namespace std::string_view_literals;
 
@@ -14,9 +16,6 @@ using std::placeholders::_3;
 using std::placeholders::_4;
 using std::placeholders::_5;
 
-class HttpRequest;
-class HttpResponse;
-class Buffer;
 
 typedef std::unique_ptr<HttpRequest> HttpRequestPtr;
 typedef std::unique_ptr<HttpResponse> HttpResponsePtr;

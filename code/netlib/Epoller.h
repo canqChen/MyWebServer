@@ -8,7 +8,7 @@
 #include <vector>
 #include <errno.h>
 
-#include "../common/NoCopyable.h"
+#include "common/NoCopyable.h"
 
 class EventLoop;
 

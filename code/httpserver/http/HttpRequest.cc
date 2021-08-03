@@ -1,6 +1,6 @@
 #include<cassert>
-#include "./HttpRequest.h"
-#include "../utils/StringUtils.h"
+#include "httpserver/http/HttpRequest.h"
+#include "httpserver/utils/StringUtils.h"
 
 
 HttpRequest::HttpRequest() : URL_(""), URI_(""), requestBody_(""), 

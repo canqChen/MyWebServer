@@ -1,7 +1,7 @@
 
 ## MyWebServer
 * 利用IO复用技术epoll、非阻塞socket、多Reactor事件处理模式实现网络库
-* 每个线程运行一个EvenLoop，每个EvenLoop都是一个基于epoll的Reactor模型，都能接受socket连接，并负责其所接受的socket的事件监听与分发，使用Linux 内核3.9版本后提供的SO_REUSEPORT选项，防止Acceptor的“惊群”问题
+* 每个线程运行一个EventLoop，每个EventLoop都是一个基于epoll的Reactor模型，都能接受socket连接，并负责其所接受的socket的事件监听与分发，使用Linux 内核3.9版本后提供的SO_REUSEPORT选项，防止Acceptor的“惊群”问题
 * 封装标准库容器vector构建缓冲区类，实现读写缓冲区自动增长
 * 利用正则表达式与有限状态机解析HTTP请求报文(GET和POST)，实现处理客户对静态资源的请求
 * 基于红黑树(std::set)实现的定时器，关闭超时(120s)无响应的非活动连接

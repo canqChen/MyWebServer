@@ -13,8 +13,8 @@ byte URLEncodeUtils::fromHex(byte x) {
     return y;
 }
 
-string URLEncodeUtils::decode(const string& str, bool URI = true) {
-    string ret = "";
+string URLEncodeUtils::decode(string_view str, bool URI = true) {
+    string ret;
     size_t length = str.length();
     for (size_t i = 0; i < length; i++) {
         if (str[i] == '+' && !URI)  // application/x-www-form-urlencoded 格式里，空格 encode 为 +
@@ -44,8 +44,8 @@ string URLEncodeUtils::decode(const string& str, bool URI = true) {
 其中 xy 为该字节的两位十六进制表示形式。编码机制是 UTF-8。
 */
 
-string URLEncodeUtils::encode(const std::string& str, bool URI = true) {
-    string ret = "";
+string URLEncodeUtils::encode(string_view str, bool URI = true) {
+    string ret;
     size_t length = str.length();
     for (size_t i = 0; i < length; i++)
     {
