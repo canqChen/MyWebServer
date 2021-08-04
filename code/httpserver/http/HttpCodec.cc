@@ -19,7 +19,9 @@ using std::regex;
 
 std::unordered_map<string, std::pair<char *, struct stat> > HttpCodec::cache_;
 
-HttpRequestPtr HttpCodec::parseHttp(Buffer & buff) 
+HttpCodec::HttpCodec() : parseState_(REQUEST_LINE), contextPath_(Config::CONTEXT_PATH){}
+
+HttpRequestPtr HttpCodec::parseHttp(Buffer & buff)
 {
     HttpRequestPtr req = std::make_unique<HttpRequest>();
     bool ret = __parseRequest(buff, req);
@@ -121,15 +123,15 @@ bool HttpCodec::__parseRequestLine(const string& line, HttpRequestPtr& req)
         }
         req->URL_ = subMatch[2];
         __parseURL(req->URL_, req);
-        string verStr = subMatch[3];
+        string verStr(subMatch[3]);
         if(HttpVersion::contain(verStr)) {
             req->httpVersion_ = verStr;
         }
         else {
             req->httpVersion_ = HttpVersion::ErrorVersion;
         }
-        LOG_DEBUG("Method: %s, URL: %s, HttpVersion: %s", \
-        methodStr.c_str(), req->URL_.c_str(), verStr.c_str());
+        LOG_DEBUG("Method: %s, URL: %s, URI: %s, HttpVersion: %s", \
+        methodStr.c_str(), req->URL_.c_str(), req->URI_.c_str(), verStr.c_str());
         return true;
     }
     LOG_ERROR("RequestLine Error: %s", line.c_str());
@@ -182,7 +184,7 @@ void HttpCodec::__parseURL(string & url, HttpRequestPtr& req)
         else {
             req->URI_ = uri;
         }
-        string params = subMatch[3];
+        string params(subMatch[3]);
         if(!params.empty()) {
             __parseParams(params, req);
         }

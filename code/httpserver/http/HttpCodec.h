@@ -8,7 +8,7 @@
 class HttpCodec: NoCopyable
 {
 public:
-    HttpCodec(): parseState_(REQUEST_LINE){};
+    HttpCodec();
     ~HttpCodec() = default;
 
     HttpRequestPtr parseHttp(Buffer & buff);

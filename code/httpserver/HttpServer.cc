@@ -75,7 +75,7 @@ void HttpServer::__setHandlerCallback()
     interceptorList_.emplace_back(new CheckHttpValidInterceptor());
     // static resource request
     handlerList_.emplace_back(new StaticResourceHandler());
-    string staticPattern = "^.*\\.(css|js|eot|svg|ttf|woff|woff2|otf|html|htm|mp4|png|jpg|ico)$";
+    string staticPattern = "(^/$|^.*\\.(css|js|eot|svg|ttf|woff|woff2|otf|html|htm|mp4|png|jpg|ico)$)";
     dispatcher_->registerHandlerCallback(staticPattern, HttpMethod::GET, 
         [ptr = handlerList_.back()](const HttpRequestPtr &req, HttpResponsePtr & resp) {ptr->doGet(req, resp);});
     dispatcher_->registerInterceptor(staticPattern, HttpMethod::GET, 
