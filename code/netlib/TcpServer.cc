@@ -33,7 +33,8 @@ void TcpServer::__handleNewConnection(int connfd,
             &TcpServer::__handleCloseConnection, this, _1));
     // enable and tie channel
     conn->connectEstablished();
-    // log info
+
+    // upper callback: log info
     connectionCallback_(conn);
 }
 

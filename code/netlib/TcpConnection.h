@@ -3,9 +3,11 @@
 
 #include <any>
 
+#include "Timestamp.h"
 #include "../common/Buffer.h"
 #include "Channel.h"
 #include "InetAddress.h"
+
 
 // ont object for each tcp connection
 class TcpConnection: NoCopyable, public std::enable_shared_from_this<TcpConnection> 
@@ -99,6 +101,16 @@ public:
         return outputBuffer_; 
     }
 
+    Timestamp getExpireTime() const 
+    {
+        return expireTime_;
+    }
+
+    void setExpireTime(Timestamp t) 
+    {
+        expireTime_ = t;
+    }
+
 private:
     enum ConnectionState 
     {
@@ -138,6 +150,8 @@ private:
     WriteCompleteCallback writeCompleteCallback_;
     HighWaterMarkCallback highWaterMarkCallback_;
     CloseCallback closeCallback_;   // serves for tcpserver and tcpclient
+    // record last receive request time, used for delete idle connection
+    Timestamp expireTime_;
 };
 
 

@@ -157,8 +157,12 @@ bool BlockQueue<T>::pop(T &item) {
     }
     item = queue_.front();
     queue_.pop();
+    while(!queue_.empty()) {
+        item += queue_.front();
+        queue_.pop();
+    }
     locker.unlock();
-    producerCond_.notify_one();
+    producerCond_.notify_all();
     return true;
 }
 

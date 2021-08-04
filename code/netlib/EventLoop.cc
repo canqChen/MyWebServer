@@ -138,6 +138,7 @@ Timer* EventLoop::runAfter(Nanosecond interval, TimerCallback callback)
 
 Timer* EventLoop::runEvery(Nanosecond interval, TimerCallback callback) 
 {
+    LOG_DEBUG("interval %ld", interval.count());
     return timerQueue_.addTimer(std::move(callback),
                                 GetTimestamp::now() + interval,
                                 interval);

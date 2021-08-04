@@ -42,7 +42,6 @@ private:
     void __flush();
     void __flushAll();
     void __write(const char * file, int line, LogLevel level, const char *format, va_list vaList);
-    static void __flushLogThread();
     bool __isFileOpen() const {return fp_ != nullptr;}
 
     string __genFileName(struct tm sysTime);

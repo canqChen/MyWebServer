@@ -14,7 +14,7 @@ TimerQueue::TimerQueue(EventLoop *loop)
     // 每个loop都有各自的定时器队列
     loop_->assertInLoopThread();
     // 注册定时器事件回调
-    timerChannel_.setReadCallback([this](){ 
+    timerChannel_.setReadCallback([this]() { 
         __handleEventFdRead(); 
     });
     // 注册监听timerfd可读事件

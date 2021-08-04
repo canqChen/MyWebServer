@@ -12,6 +12,8 @@ namespace Config
     const uint32_t LOOPS = 6;
     const uint32_t WORKERS = 6;
     const string SERVER_NAME = "WebServer by CCQ";
+    const size_t MAXCONN = 2048;
+    const size_t KEEPALIVE_TIME = 30; // seconds
 }
 
 #endif

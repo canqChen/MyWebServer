@@ -1,9 +1,13 @@
 
 #include "Log.h"
 
-using namespace std;
+using std::lock_guard;
+using std::unique_lock;
+using std::string;
+using std::mutex;
+using std::thread;
 
-Log::Log() : MAX_LINES(100000), LOG_NAME_LEN(128),
+Log::Log() : MAX_LINES(50000), LOG_NAME_LEN(128),
     lineCount_(0),  writeThread_(nullptr), blockQueue_(nullptr),
     today_(0), fp_(nullptr), fileIdx_(0)
 {
@@ -37,13 +41,6 @@ void Log::setLogLevel(LogLevel level)
 void Log::init(LogLevel level = INFO, const char *path, const char *suffix) {
     level_ = level;
 
-    if (!blockQueue_) {
-        blockQueue_.reset(new BlockQueue<std::string>());
-
-        std::unique_ptr<std::thread> NewThread(new thread(__flushLogThread)); // 创建线程异步写日志
-        writeThread_ = std::move(NewThread);
-    }
-
     lineCount_ = 0;
     logPath_ = path;
     suffix_ = suffix;
@@ -54,6 +51,13 @@ void Log::init(LogLevel level = INFO, const char *path, const char *suffix) {
     __determineLogIdx(sysTime);
     auto fileName = __genFileName(sysTime);
     __openFile(fileName);
+
+    if (!blockQueue_) {
+        blockQueue_.reset(new BlockQueue<std::string>());
+
+        std::unique_ptr<std::thread> NewThread(new thread([this](){this->__asyncWrite();})); // 创建线程异步写日志
+        writeThread_ = std::move(NewThread);
+    }
 }
 
 string Log::__genFileName(struct tm sysTime){
@@ -161,7 +165,7 @@ void Log::logBase(const char * file, int line, LogLevel level, bool to_abort, co
 void Log::__write(const char * file, int line, LogLevel level, const char *format, va_list vaList) {
     // 加锁检查是否需要更新写入的日志文件
     // 获取当前系统时间
-    Buffer buff(256, 8);
+    Buffer buff(512, 8);
     struct timeval now = {0, 0};
     gettimeofday(&now, nullptr); // 返回当前距离1970年的秒数和微妙数，后面的tz是时区，一般不用
     time_t tSec = now.tv_sec;
@@ -190,7 +194,7 @@ void Log::__write(const char * file, int line, LogLevel level, const char *forma
     int m = vsnprintf(buff.writePtr(), buff.writableBytes(), format, vaList);
 
     buff.updateWritePos(m);
-    buff.append("\n\0", 2);
+    buff.append("\n", 1);
 
     // 将日志信息加入阻塞队列,同步则加锁向文件中写
     // 队列满，则阻塞等待，ClearAllToStr清空buff并返回string
@@ -218,7 +222,7 @@ void Log::__appendLogLevelTitle(LogLevel level, Buffer & buff)
         break;
     case INFO:
     default:
-        buff.append("[info]: ", 8);
+        buff.append("[info]: ", 9);
         break;
     }
 }
@@ -235,19 +239,17 @@ void Log::__flushAll() {
 }
 
 void Log::__asyncWrite() {
-    string str = "";
+    string str;
+    LOG_DEBUG("log thread running ...");
     while (blockQueue_->pop(str))  // 队列空，会阻塞
     {
-        lock_guard<mutex> locker(mtx_);
+        // lock_guard<mutex> locker(mtx_);
         fputs(str.c_str(), fp_);
     }
+    LOG_DEBUG("log thread exiting ...");
 }
 
 Log *Log::getInstance() {
     static Log inst;
     return &inst;
-}
-
-void Log::__flushLogThread() {
-    Log::getInstance()->__asyncWrite();
 }

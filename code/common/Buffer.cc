@@ -125,7 +125,7 @@ const char * Buffer::findCRLF() const
 const char * Buffer::findDoubleCRLF() const 
 {
     auto crlf = "\r\n\r\n";
-    const char* pos = std::search(readPtr(), writePtr(), crlf, crlf + 2);
+    const char* pos = std::search(readPtr(), writePtr(), crlf, crlf + 4);
     return pos == writePtr() ? nullptr : pos;
 }
 

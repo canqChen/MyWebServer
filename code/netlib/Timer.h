@@ -22,12 +22,12 @@ public:
     void run() 
     { 
         if (callback_) 
-            callback_(); 
+            callback_();
     }
 
     bool isRepeat() const 
     { 
-        return repeat_; 
+        return repeat_;
     }
 
     bool isExpired(Timestamp & now) const 

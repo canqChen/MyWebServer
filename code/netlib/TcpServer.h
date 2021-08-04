@@ -18,7 +18,7 @@ public:
     }
 
     void setMessageCallback(const MessageCallback &cb) { 
-        messageCallback_ = cb; 
+        messageCallback_ = cb;
     }
 
     void setWriteCompleteCallback(const WriteCompleteCallback &cb) { 

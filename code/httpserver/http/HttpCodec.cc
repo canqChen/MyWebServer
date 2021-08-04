@@ -58,7 +58,7 @@ bool HttpCodec::__parseRequest(Buffer& buff, HttpRequestPtr& req)
             return false;
         }
         // end of the request line and header
-        else if(buff.findCRLF() == buff.readPtr()) {
+        else if(lineEnd == buff.readPtr()) {
             buff.forwardReadPos(lineEnd + 2);
             size_t len = req->getContentLength();
             // get request

@@ -1,5 +1,5 @@
 #include <unistd.h>
-#include "httpserver/HttpServer.h"
+#include "httpserver/HttpServerPool.h"
 #include "httpserver/Config.h"
 #include "common/Log.h"
 
@@ -12,7 +12,7 @@ int main() {
     Log::getInstance()->init(INFO);
 #endif
     InetAddress local(Config::SERVER_PORT);
-    HttpServer server(local, Config::LOOPS, Config::WORKERS);
+    HttpServerPool server(local, Config::LOOPS);
     server.start();
 
     return 0;

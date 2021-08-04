@@ -4,6 +4,7 @@
 
 #include "../common/Log.h"
 #include "EventLoop.h"
+#include "Socket.h"
 
 
 TcpConnection::TcpConnection(EventLoop *loop, int sockfd,
@@ -27,7 +28,7 @@ TcpConnection::~TcpConnection()
     assert(state_ == DISCONNECTED);
     ::close(sockfd_);
 
-    LOG_TRACE("~TcpConnection() %s fd=%d", name().c_str(), sockfd_);
+    LOG_DEBUG("~TcpConnection() %s close fd=%d", name().c_str(), sockfd_);
 }
 
 // tie to channal and enable read
@@ -261,7 +262,7 @@ void TcpConnection::__handleClose()
            state_ == DISCONNECTING);
     state_ = DISCONNECTED;
     loop_->removeChannel(&channel_);
-    // callback, delete this tcpconnetion from tcp server or tcp client
+    // delete this tcpconnetion from tcp server or tcp client
     closeCallback_(shared_from_this());
 }
 
@@ -269,7 +270,8 @@ void TcpConnection::__handleError()
 {
     int err;
     socklen_t len = sizeof(err);
-    int ret = getsockopt(sockfd_, SOL_SOCKET, SO_ERROR, &err, &len);
+    int ret = Socket::getSocketError(sockfd_, &err);
+    // int ret = getsockopt(sockfd_, SOL_SOCKET, SO_ERROR, &err, &len);
     if (ret != -1)
         errno = err;
     LOG_ERROR("TcpConnection::__handleError()");
