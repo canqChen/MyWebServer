@@ -88,6 +88,9 @@ struct MIME
     static const string CSS;
     static const string JS;
     static const string XML;
+    static const string ICO;
+    static const string TTF;
+    static const string SVG;
 
     static const unordered_map<string, string> SUFFIX2TYPE_;
 

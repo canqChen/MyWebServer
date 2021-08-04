@@ -11,8 +11,12 @@
 void StaticResourceHandler::doGet(const HttpRequestPtr &req, HttpResponsePtr & resp) 
 {
     string resourceName = req->getRequestURI();
+    string suffix = StringUtils::getSuffix(resourceName);
     if(resourceName == "/") {
         resourceName = "/index.html";
+    }
+    else if(StringUtils::isEmpty(suffix)) {
+        resourceName += ".html";
     }
     string path = Config::CONTEXT_PATH + resourceName;
     LOG_DEBUG("resource path: %s", path.c_str());

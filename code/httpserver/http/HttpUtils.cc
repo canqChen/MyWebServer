@@ -98,13 +98,16 @@ const string MIME::PDF = "application/pdf";
 const string MIME::CSS = "text/css";
 const string MIME::JS = "text/javascript";
 const string MIME::XML = "text/xml";
+const string MIME::ICO = "application/octet-stream";
+const string MIME::TTF = "application/octet-stream";
+const string MIME::SVG = "image/svg-xml";
 
 const unordered_map<string, string> MIME::SUFFIX2TYPE_ {
     {".html", HTML}, {".txt", TXT}, {".jpg", JPG}, {".png", PNG}, 
     {".mp4", MP4}, {".mp3", MP3}, {".avi", AVI}, {".json", JSON}, 
     {".tar", TAR}, {".rar", RAR}, {".gif", GIF}, {".bin", BIN}, 
     {".pdf", PDF}, {".gz", GZ}, {".css", CSS}, {".js", JS},
-    {".xml", XML}
+    {".xml", XML}, {".ico", ICO}, {".ttf", TTF}, {".svg", SVG}
 };
 
 string MIME::getContentTypeBySuffix(string_view suffix) 
@@ -113,7 +116,7 @@ string MIME::getContentTypeBySuffix(string_view suffix)
     if(SUFFIX2TYPE_.find(suf) != SUFFIX2TYPE_.end()) {
         return SUFFIX2TYPE_.at(suf);
     }
-    return TXT;
+    return BIN;
 }
 
 
