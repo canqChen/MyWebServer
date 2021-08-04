@@ -82,7 +82,7 @@ ssize_t HttpClient::send(int* saveErrno) {
         else {
             iov_[0].iov_base = (uint8_t*)iov_[0].iov_base + len; 
             iov_[0].iov_len -= len;
-            writeBuff_.updateReadPos(len);
+            writeBuff_.forwardReadPos(len);
         }
     } while(isET || bytesToWrite() > 10240);
     return len;

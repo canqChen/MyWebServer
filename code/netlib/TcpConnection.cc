@@ -133,7 +133,7 @@ void TcpConnection::send(Buffer& buffer)
     }
     if (loop_->isInLoopThread()) {
         __sendInLoop(buffer.readPtr(), buffer.readableBytes());
-        buffer.updateReadPos(buffer.writePtr());
+        buffer.forwardReadPos(buffer.writePtr());
     }
     else {
         loop_->queueInLoop(
@@ -237,7 +237,7 @@ void TcpConnection::__handleWrite()
         LOG_ERROR("TcpConnection::write() error");
     }
     else {
-        outputBuffer_.updateReadPos(static_cast<size_t>(n));
+        outputBuffer_.forwardReadPos(static_cast<size_t>(n));
         if (outputBuffer_.readableBytes() == 0) {
             // write complete, disable to listen writable event, 
             // otherwise writable event will be aroused even if 

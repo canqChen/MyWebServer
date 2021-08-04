@@ -53,12 +53,13 @@ bool HttpCodec::__parseRequest(Buffer& buff, HttpRequestPtr& req)
         string line;
         // incomplete massage
         if(lineEnd == nullptr) {
-            buff.updateReadPos(originBegin);
+            if(buff.readPtr() != originBegin)
+                buff.backwardReadPos(originBegin);
             return false;
         }
         // end of the request line and header
         else if(buff.findCRLF() == buff.readPtr()) {
-            buff.updateReadPos(lineEnd + 2);
+            buff.forwardReadPos(lineEnd + 2);
             size_t len = req->getContentLength();
             // get request
             if(len == 0) {
@@ -67,19 +68,19 @@ bool HttpCodec::__parseRequest(Buffer& buff, HttpRequestPtr& req)
             else {
                 // incomplete message
                 if(buff.readableBytes() < len) {
-                    buff.updateReadPos(originBegin);
+                    buff.backwardReadPos(originBegin);
                     return false;
                 }
                 parseState_ = BODY;
                 line = buff.retrieve(len);
-                buff.updateReadPos(len);
+                buff.forwardReadPos(len);
             }
         }
         else {
             // 非请求体
             line = buff.retrieveUtil(lineEnd); // 读取一行
             // 跳过CRLF
-            buff.updateReadPos(lineEnd + 2);
+            buff.forwardReadPos(lineEnd + 2);
         }
 
         // 状态机解析请求

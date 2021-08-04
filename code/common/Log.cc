@@ -49,6 +49,7 @@ void Log::init(LogLevel level = INFO, const char *path, const char *suffix) {
     suffix_ = suffix;
 
     auto sysTime = __getSysTime();
+    // today_ = sysTime.tm_mday;
     // 短时间内重启服务器，fileIdx_可能不是从0开始，不过因为文件名加入了pid，所以重叠的可能性很小
     __determineLogIdx(sysTime);
     auto fileName = __genFileName(sysTime);

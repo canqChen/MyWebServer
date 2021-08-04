@@ -30,8 +30,11 @@ public:
 
     void updateWritePos(size_t len);
 
-    void updateReadPos(size_t len);
-    void updateReadPos(const char* end);
+    void forwardReadPos(size_t len);
+    void forwardReadPos(const char* end);
+
+    void backwardReadPos(size_t len);
+    void backwardReadPos(const char* end);
 
     const char * findCRLF() const;
     const char * findDoubleCRLF() const;

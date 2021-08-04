@@ -55,17 +55,31 @@ char* Buffer::writePtr()
 }
 
 // 更新下次可读起始位置 readPos
-void Buffer::updateReadPos(size_t len) 
+void Buffer::forwardReadPos(size_t len) 
 {
     assert(len <= readableBytes());
     readIdx_ += len;
 }
 
 // 更新已读光标至指定位置
-void Buffer::updateReadPos(const char* end) 
+void Buffer::forwardReadPos(const char* end) 
 {
     assert(readPtr() <= end);
-    updateReadPos(end - readPtr());
+    forwardReadPos(end - readPtr());
+}
+
+// 回退readPos
+void Buffer::backwardReadPos(size_t len) 
+{
+    assert(headerSize_ + len <= readIdx_);
+    readIdx_ -= len;
+}
+
+// 回退readPos
+void Buffer::backwardReadPos(const char* start) 
+{
+    assert(readPtr() >= start);
+    backwardReadPos(readPtr() - start);
 }
 
 // 更新下次写入起始位置的光标
@@ -181,7 +195,7 @@ ssize_t Buffer::writeFd(int fd, int* saveErrno)
         *saveErrno = errno;
         return len;
     }
-    updateReadPos(len);       // 已被读出len字节，更新下次可读出起始位置
+    forwardReadPos(len);       // 已被读出len字节，更新下次可读出起始位置
     return len;
 }
 
