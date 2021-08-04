@@ -11,7 +11,7 @@ int main() {
 #else
     Log::getInstance()->init(INFO);
 #endif
-    InetAddress local(Config::SERVER_PORT, true);
+    InetAddress local(Config::SERVER_PORT);
     HttpServer server(local, Config::LOOPS, Config::WORKERS);
     server.start();
 

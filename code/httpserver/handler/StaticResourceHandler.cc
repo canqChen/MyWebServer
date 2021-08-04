@@ -14,7 +14,7 @@ void StaticResourceHandler::doGet(const HttpRequestPtr &req, HttpResponsePtr & r
     if(resourceName == "/") {
         resourceName = "/index.html";
     }
-    string path = Config::CONTEXT_PATH + req->getRequestURI();
+    string path = Config::CONTEXT_PATH + resourceName;
     LOG_DEBUG("resource path: %s", path.c_str());
     struct stat buf;
     lstat(path.c_str(), &buf);
