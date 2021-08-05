@@ -1,5 +1,6 @@
+DEBUG = -DDEBUG
 CXX = g++
-CFLAGS = -std=c++17 -O2 -w -g   # -Wall
+CFLAGS = -std=c++17 -O3 -w ${DEBUG} -g # -Wall -g -O2
 
 TARGET = server
 OBJS = ../code/common/*.cc ../code/netlib/*.cc ../code/httpserver/*.cc \

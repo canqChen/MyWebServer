@@ -2,3 +2,5 @@
 *.exe
 *log
 server
+webbench
+webbench.o

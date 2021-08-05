@@ -58,6 +58,7 @@ void HttpServer::__onMessage(TcpConnectionPtr& conn, Buffer& buff)
     auto resp = std::make_unique<HttpResponse>();
 
     auto handler = dispatcher_->getHandler(req->getRequestURI(), req->getRequestMethod());
+
     if(handler) {
         handler(req, resp);
     }
@@ -72,6 +73,9 @@ void HttpServer::__onMessage(TcpConnectionPtr& conn, Buffer& buff)
         LOG_DEBUG("Not keep-alive, delete connection: %s", conn->name().c_str());
         conn->setWriteCompleteCallback([](const TcpConnectionPtr& c){c->shutdownWR();});
     }
+
+    // conn->setWriteCompleteCallback([](const TcpConnectionPtr& c){c->forceClose();}); // for pressure test
+
     conn->send(respBuff.readPtr(), respBuff.readableBytes());
 }
 

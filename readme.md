@@ -21,9 +21,10 @@
 ```
 ![image-webbench](./webbench10000.png)
 
-* 测试环境: Ubuntu:20.04 cpu:i7-10750 内存:12G 
+* 测试环境: Ubuntu:20.04虚拟机，cpu:i7 4核 内存:8G
 * 10000并发量下，QPS 11000+
 
 
 ## Reference
 Linux高性能服务器编程，游双著.
+Linux高性能多线程服务端编程，陈硕著.
