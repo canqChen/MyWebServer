@@ -17,12 +17,12 @@
 
 ## 压力测试
 ```bash
-./webbench-1.5/webbench -c 10000 -t 10 http://ip:port/
+./webbench-1.5/webbench -c 10000 -t 5 http://ip:port/
 ```
-![image-webbench](./webbench10000.png)
+![image-webbench](./webbench.png)
 
 * 测试环境: Ubuntu:20.04虚拟机，cpu:i7 4核 内存:8G
-* 10000并发量下，QPS 11000+
+* 10000并发量下，QPS 18000+
 
 
 ## Reference
