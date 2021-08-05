@@ -26,5 +26,7 @@
 
 
 ## Reference
-Linux高性能服务器编程，游双著.
-Linux高性能多线程服务端编程，陈硕著.
+* [《Linux高性能服务器编程》](https://book.douban.com/subject/24722611/)
+
+* [Linux高性能多线程服务端编程](https://book.douban.com/subject/20471211/)
+
