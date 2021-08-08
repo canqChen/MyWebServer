@@ -1,4 +1,4 @@
-DEBUG = -DDEBUG
+DEBUG =
 CXX = g++
 CFLAGS = -std=c++17 -O3 -w ${DEBUG} -g # -Wall -g -O2
 

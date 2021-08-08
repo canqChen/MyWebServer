@@ -1,6 +1,11 @@
 
 #include "Log.h"
 
+#include <sys/stat.h>         //mkdir
+#include <sys/time.h>
+#include <string.h>
+#include "Buffer.h"
+
 using std::lock_guard;
 using std::unique_lock;
 using std::string;
@@ -8,7 +13,7 @@ using std::mutex;
 using std::thread;
 
 Log::Log() : MAX_LINES(50000), LOG_NAME_LEN(128),
-    lineCount_(0),  writeThread_(nullptr), messageQueue_(nullptr),
+    lineCount_(0),  writeThread_(nullptr),
     today_(0), fp_(nullptr), fileIdx_(0), quit_(false)
 {
 }
@@ -193,7 +198,7 @@ void Log::__write(const char * file, int line, LogLevel level, const char *forma
     // 将日志信息加入阻塞队列,同步则加锁向文件中写
     // 队列满，则阻塞等待，ClearAllToStr清空buff并返回string
     locker.lock();
-    messageQueue_->push_back(std::move(buff.retrieveAll()));
+    messageQueue_.push(std::move(buff.retrieveAll()));
     consumeCond_.notify_one();
 }
 
@@ -229,7 +234,7 @@ void Log::__asyncWrite() {
     {
         std::unique_lock<mutex> locker(mtx_);
         while(messageQueue_.empty()) {
-            consumeCond_.wait(mtx_);
+            consumeCond_.wait(locker);
         }
         __flush();
     }

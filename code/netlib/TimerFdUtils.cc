@@ -1,4 +1,5 @@
 #include "TimerFdUtils.h"
+#include <string.h>
 
 int TimerFdUtils::timerfdCreate() {
     // CLOCK_MONOTONIC 以绝对时间为准，获取的时间为系统重启到现在的时间，更改系统时间对其没有影响

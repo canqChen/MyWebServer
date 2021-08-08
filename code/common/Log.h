@@ -6,15 +6,14 @@
 #include <condition_variable>
 #include <string>
 #include <thread>
-#include <sys/time.h>
-#include <string.h>
 #include <stdarg.h>           // vastart va_end
-#include <assert.h>
-#include <sys/stat.h>         //mkdir
+#include <cassert>
+
 #include <queue>
-// #include "BlockQueue.h"
-#include "Buffer.h"
+
 #include "NoCopyable.h"
+
+class Buffer;
 
 enum LogLevel 
 {
@@ -27,8 +26,8 @@ enum LogLevel
     OFF
 };
 
-
-class Log : NoCopyable{
+class Log : NoCopyable
+{
 public:
     void init(LogLevel level, const char* path = "./log", 
                 const char* suffix =".log");
@@ -45,10 +44,10 @@ private:
     void __write(const char * file, int line, LogLevel level, const char *format, va_list vaList);
     bool __isFileOpen() const {return fp_ != nullptr;}
     void __flush();
-    string __genFileName(struct tm sysTime);
+    std::string __genFileName(struct tm sysTime);
     void __changeLogFile(struct tm sysTime);
     void __determineLogIdx(struct tm sysTime);
-    void __openFile(string fileName);
+    void __openFile(std::string fileName);
     struct tm __getSysTime();
 
 private:
@@ -68,7 +67,7 @@ private:
     FILE* fp_;
     std::queue<std::string> messageQueue_;  // 阻塞队列
     std::unique_ptr<std::thread> writeThread_;  // 写日志线程
-    std::mutex mtx_;
+    mutable std::mutex mtx_;
     std::condition_variable consumeCond_;
     volatile bool quit_;
 };
