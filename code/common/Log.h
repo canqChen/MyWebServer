@@ -3,6 +3,7 @@
 #define LOG_H
 
 #include <mutex>
+#include <condition_variable>
 #include <string>
 #include <thread>
 #include <sys/time.h>
@@ -10,11 +11,13 @@
 #include <stdarg.h>           // vastart va_end
 #include <assert.h>
 #include <sys/stat.h>         //mkdir
-#include "BlockQueue.h"
+#include <queue>
+// #include "BlockQueue.h"
 #include "Buffer.h"
 #include "NoCopyable.h"
 
-enum LogLevel {
+enum LogLevel 
+{
     TRACE,
     DEBUG,
     INFO,
@@ -39,11 +42,9 @@ private:
     
     void __asyncWrite();
     void __appendLogLevelTitle(LogLevel level, Buffer & buff);
-    void __flush();
-    void __flushAll();
     void __write(const char * file, int line, LogLevel level, const char *format, va_list vaList);
     bool __isFileOpen() const {return fp_ != nullptr;}
-
+    void __flush();
     string __genFileName(struct tm sysTime);
     void __changeLogFile(struct tm sysTime);
     void __determineLogIdx(struct tm sysTime);
@@ -65,9 +66,11 @@ private:
     LogLevel level_;
 
     FILE* fp_;
-    std::unique_ptr<BlockQueue<std::string> > blockQueue_;  // 封装阻塞队列
+    std::queue<std::string> messageQueue_;  // 阻塞队列
     std::unique_ptr<std::thread> writeThread_;  // 写日志线程
     std::mutex mtx_;
+    std::condition_variable consumeCond_;
+    volatile bool quit_;
 };
 
 #define LOG_BASE(level, to_abort, format, ...) (Log::getInstance()->logBase(__FILE__, __LINE__, level, to_abort, format, ##__VA_ARGS__))

@@ -8,17 +8,15 @@ using std::mutex;
 using std::thread;
 
 Log::Log() : MAX_LINES(50000), LOG_NAME_LEN(128),
-    lineCount_(0),  writeThread_(nullptr), blockQueue_(nullptr),
-    today_(0), fp_(nullptr), fileIdx_(0)
+    lineCount_(0),  writeThread_(nullptr), messageQueue_(nullptr),
+    today_(0), fp_(nullptr), fileIdx_(0), quit_(false)
 {
 }
 
 Log::~Log()
 {
-    lock_guard<mutex> locker(mtx_);
     if (writeThread_ && writeThread_->joinable() && fp_) {
-        __flushAll();
-        blockQueue_->close();
+        quit_ = true;
         writeThread_->join();
     }
     fclose(fp_);
@@ -34,7 +32,7 @@ LogLevel Log::getLevel()
 void Log::setLogLevel(LogLevel level)
 {
     // 运行过程更改日志级别需要加锁
-    lock_guard<mutex> locker(mtx_);
+    std::lock_guard<mutex> locker(mtx_);
     level_ = level;
 }
 
@@ -52,12 +50,10 @@ void Log::init(LogLevel level = INFO, const char *path, const char *suffix) {
     auto fileName = __genFileName(sysTime);
     __openFile(fileName);
 
-    if (!blockQueue_) {
-        blockQueue_.reset(new BlockQueue<std::string>());
-
-        std::unique_ptr<std::thread> NewThread(new thread([this](){this->__asyncWrite();})); // 创建线程异步写日志
-        writeThread_ = std::move(NewThread);
-    }
+    std::queue<string> tmp;
+    tmp.swap(messageQueue_);
+    std::unique_ptr<std::thread> NewThread(new std::thread([this](){this->__asyncWrite();})); // 创建线程异步写日志
+    writeThread_ = std::move(NewThread);
 }
 
 string Log::__genFileName(struct tm sysTime){
@@ -102,8 +98,8 @@ void Log::__determineLogIdx(struct tm sysTime) {
 // 检查写入日志日期是否为保存的today_，日志行数是否超过最大限制，不满足则新建文件
 void Log::__changeLogFile(struct tm sysTime) {
     string fileName;
-    // 将日志队列里面的旧日志清空
-    __flushAll();
+    // 清空队列再更换文件
+    __flush();
     // 如果是时间不是今天，则创建今天的日志，更新today_和lineCount_
     if (today_ != sysTime.tm_mday) {
         // 第二天的日志文件，从0开始计数
@@ -153,9 +149,7 @@ void Log::logBase(const char * file, int line, LogLevel level, bool to_abort, co
         va_start(vaList, format);
         __write(file, line, level, format, vaList);
         va_end(vaList);
-        __flush();
         if(to_abort) {
-            __flushAll();
             abort();
         }
     }
@@ -198,7 +192,9 @@ void Log::__write(const char * file, int line, LogLevel level, const char *forma
 
     // 将日志信息加入阻塞队列,同步则加锁向文件中写
     // 队列满，则阻塞等待，ClearAllToStr清空buff并返回string
-    blockQueue_->push_back(buff.retrieveAll());
+    locker.lock();
+    messageQueue_->push_back(std::move(buff.retrieveAll()));
+    consumeCond_.notify_one();
 }
 
 void Log::__appendLogLevelTitle(LogLevel level, Buffer & buff)
@@ -227,26 +223,26 @@ void Log::__appendLogLevelTitle(LogLevel level, Buffer & buff)
     }
 }
 
-// 插入一则日志，__flush一次，唤醒一个消费者(pop)，__asyncWrite 执行异步写
-void Log::__flush() {
-    blockQueue_->flush();
-}
-
-// 清空队列中的日志，日志写满时调用
-void Log::__flushAll() {
-    blockQueue_->flushAll(fp_);
-    fflush(fp_); // fflush()会强迫将缓冲区内的数据写回参数fp_指定的文件中，防止写入下个日志文件
-}
-
 void Log::__asyncWrite() {
-    string str;
     LOG_DEBUG("log thread running ...");
-    while (blockQueue_->pop(str))  // 队列空，会阻塞
+    while (!quit_)  // 队列空，会阻塞
     {
-        // lock_guard<mutex> locker(mtx_);
-        fputs(str.c_str(), fp_);
+        std::unique_lock<mutex> locker(mtx_);
+        while(messageQueue_.empty()) {
+            consumeCond_.wait(mtx_);
+        }
+        __flush();
     }
     LOG_DEBUG("log thread exiting ...");
+}
+
+void Log::__flush()
+{
+    while(!messageQueue_.empty()) {
+        fputs(messageQueue_.front().c_str(), fp_);
+        messageQueue_.pop();
+    }
+    fflush(fp_);
 }
 
 Log *Log::getInstance() {

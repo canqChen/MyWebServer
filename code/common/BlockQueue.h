@@ -38,8 +38,8 @@ public:
     bool pop(T &item, int timeout);
     // 唤醒消费者
     void flush();
-    // 清空队列
-    void flushAll(FILE * fp);
+    // // 清空队列
+    // void flushAll(FILE * fp);
 private:
     std::queue<T> queue_;
 
@@ -47,7 +47,7 @@ private:
 
     mutable std::mutex mtx_;
 
-    bool isClose_;
+    bool quit_;
 
     std::condition_variable consumerCond_;
 
@@ -57,13 +57,15 @@ private:
 
 
 template<class T>
-BlockQueue<T>::BlockQueue(size_t MaxCapacity) :capacity_(MaxCapacity) {
+BlockQueue<T>::BlockQueue(size_t MaxCapacity) 
+    : capacity_(MaxCapacity), quit_(false)
+{
     assert(MaxCapacity > 0);
-    isClose_ = false;
 }
 
 template<class T>
-BlockQueue<T>::~BlockQueue() {
+BlockQueue<T>::~BlockQueue() 
+{
     close();
 }
 
@@ -73,7 +75,7 @@ void BlockQueue<T>::close() {
         std::lock_guard<std::mutex> locker(mtx_);
         std::queue<T> tmp;
         tmp.swap(queue_);
-        isClose_ = true;
+        quit_ = true;
     }
     producerCond_.notify_all();
     consumerCond_.notify_all();
@@ -81,49 +83,56 @@ void BlockQueue<T>::close() {
 
 // 唤醒消费者
 template<class T>
-void BlockQueue<T>::flush() {
+void BlockQueue<T>::flush() 
+{
     std::lock_guard<std::mutex> locker(mtx_);
     consumerCond_.notify_one();
 }
 
-// 清空队列，只用于日志系统
-template<class T>
-void BlockQueue<T>::flushAll(FILE * fp) {
-    std::lock_guard<std::mutex> locker(mtx_);
-    while(!queue_.empty()) {
-        T str = queue_.front();
-        queue_.pop();
-        fputs(str.c_str(), fp);
-    }
-}
+// // 清空队列，只用于日志系统
+// template<class T>
+// void BlockQueue<T>::flushAll(FILE * fp) 
+// {
+//     std::lock_guard<std::mutex> locker(mtx_);
+//     while(!queue_.empty()) {
+//         T str = queue_.front();
+//         queue_.pop();
+//         fputs(str.c_str(), fp);
+//     }
+// }
 
 template<class T>
-void BlockQueue<T>::clear() {
+void BlockQueue<T>::clear() 
+{
     std::lock_guard<std::mutex> locker(mtx_);
     std::queue<T> tmp;
     tmp.swap(queue_);
 }
 
 template<class T>
-T& BlockQueue<T>::front() {
+T& BlockQueue<T>::front() 
+{
     std::lock_guard<std::mutex> locker(mtx_);
     return queue_.front();
 }
 
 template<class T>
-size_t BlockQueue<T>::size() const {
+size_t BlockQueue<T>::size() const 
+{
     std::lock_guard<std::mutex> locker(mtx_);
     return queue_.size();
 }
 
 template<class T>
-size_t BlockQueue<T>::capacity() const{
+size_t BlockQueue<T>::capacity() const
+{
     return capacity_;
 }
 
 // 生产者-队尾插入
 template<class T>
-void BlockQueue<T>::push_back(const T &item) {
+void BlockQueue<T>::push_back(const T &item) 
+{
     std::unique_lock<std::mutex> locker(mtx_);
     while(queue_.size() >= capacity_) {   // 队列满，等待
         producerCond_.wait(locker);     // 释放锁，阻塞
@@ -134,24 +143,39 @@ void BlockQueue<T>::push_back(const T &item) {
 }
 
 template<class T>
-bool BlockQueue<T>::empty() const{
+void BlockQueue<T>::push_back(T &&item) 
+{
+    std::unique_lock<std::mutex> locker(mtx_);
+    while(queue_.size() >= capacity_) {   // 队列满，等待
+        producerCond_.wait(locker);     // 释放锁，阻塞
+    }
+    queue_.push(std::move(item));
+    locker.unlock();
+    consumerCond_.notify_one();
+}
+
+template<class T>
+bool BlockQueue<T>::empty() const
+{
     std::lock_guard<std::mutex> locker(mtx_);
     return queue_.empty();
 }
 
 template<class T>
-bool BlockQueue<T>::full() const{
+bool BlockQueue<T>::full() const
+{
     std::lock_guard<std::mutex> locker(mtx_);
     return queue_.size() >= capacity_;
 }
 
 // 消费者-队首弹出，队列空则阻塞等待
 template<class T>
-bool BlockQueue<T>::pop(T &item) {
+bool BlockQueue<T>::pop(T &item) 
+{
     std::unique_lock<std::mutex> locker(mtx_);
     while(queue_.empty()) {        // 队列空，等待生产
         consumerCond_.wait(locker);
-        if(isClose_) {
+        if(quit_) {
             return false;
         }
     }
@@ -175,7 +199,7 @@ bool BlockQueue<T>::pop(T &item, int timeout) {
                 == std::cv_status::timeout){
             return false;
         }
-        if(isClose_) {
+        if(quit_) {
             return false;
         }
     }
