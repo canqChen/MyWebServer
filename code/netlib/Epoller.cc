@@ -26,8 +26,7 @@ void Epoller::poll(ChannelList& activeChannels, int timeoutMs)
     int nEvents = epoll_wait(epollfd_, events_.data(), maxEvents, timeoutMs);
     if (nEvents == -1) {
         if (errno != EINTR) {
-            LOG_ERROR("Fail in %s", "Epoller::poll");
-            exit(1);
+            LOG_FATAL("Fail in %s", "Epoller::poll");
         }
     }
     else if (nEvents > 0) {
